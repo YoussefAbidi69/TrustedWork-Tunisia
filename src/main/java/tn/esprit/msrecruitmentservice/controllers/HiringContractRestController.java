@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import tn.esprit.msrecruitmentservice.dto.HiringContractDTO;
 import tn.esprit.msrecruitmentservice.services.IHiringContractService;
 import java.util.List;
+@CrossOrigin(origins = "http://localhost:4200")
 
 @RestController
 @RequestMapping("/contracts")

@@ -9,6 +9,7 @@ import tn.esprit.msrecruitmentservice.dto.RecruitmentOfferDTO;
 import tn.esprit.msrecruitmentservice.entities.OfferStatus;
 import tn.esprit.msrecruitmentservice.services.IRecruitmentOfferService;
 import java.util.List;
+@CrossOrigin(origins = "http://localhost:4200")
 
 @RestController
 @RequestMapping("/offers")

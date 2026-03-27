@@ -9,7 +9,7 @@ import tn.esprit.msrecruitmentservice.dto.TalentPoolDTO;
 import tn.esprit.msrecruitmentservice.entities.TalentTag;
 import tn.esprit.msrecruitmentservice.services.ITalentPoolService;
 import java.util.List;
-
+@CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping("/talent-pool")
 @Tag(name = "TalentPool", description = "Gestion du vivier de talents")

@@ -9,6 +9,7 @@ import tn.esprit.msrecruitmentservice.dto.InterviewScheduleDTO;
 import tn.esprit.msrecruitmentservice.entities.InterviewStatus;
 import tn.esprit.msrecruitmentservice.services.IInterviewScheduleService;
 import java.util.List;
+@CrossOrigin(origins = "http://localhost:4200")
 
 @RestController
 @RequestMapping("/interviews")

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import tn.esprit.msrecruitmentservice.dto.JobPositionDTO;
 import tn.esprit.msrecruitmentservice.services.IJobPositionService;
 import java.util.List;
+@CrossOrigin(origins = "http://localhost:4200")
 
 @RestController
 @RequestMapping("/job-positions")
