@@ -1,16 +1,17 @@
 package tn.esprit.reviewservice.service.interfaces;
 
-import tn.esprit.reviewservice.entity.Review;
+import tn.esprit.reviewservice.dto.request.ReviewRequest;
+import tn.esprit.reviewservice.dto.response.ReviewResponse;
 
 import java.util.List;
 
 public interface IReviewService {
 
-    Review createReview(Review review);
+    ReviewResponse createReview(ReviewRequest request);
 
-    List<Review> getAllReviews();
+    List<ReviewResponse> getAllReviews();
 
-    Review getReviewById(Long id);
+    ReviewResponse getReviewById(Long id);
 
     void deleteReview(Long id);
 }

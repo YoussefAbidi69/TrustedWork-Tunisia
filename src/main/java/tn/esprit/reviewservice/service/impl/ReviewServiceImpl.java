@@ -1,32 +1,47 @@
 package tn.esprit.reviewservice.service.impl;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import tn.esprit.reviewservice.dto.request.ReviewRequest;
+import tn.esprit.reviewservice.dto.response.ReviewResponse;
 import tn.esprit.reviewservice.entity.Review;
+import tn.esprit.reviewservice.mapper.ReviewMapper;
 import tn.esprit.reviewservice.repository.ReviewRepository;
 import tn.esprit.reviewservice.service.interfaces.IReviewService;
 
 import java.util.List;
-@RequiredArgsConstructor
+import java.util.stream.Collectors;
+
 @Service
 public class ReviewServiceImpl implements IReviewService {
 
     private final ReviewRepository reviewRepository;
+    private final ReviewMapper reviewMapper;
 
-
-@Override
-    public Review createReview(Review review) {
-        return reviewRepository.save(review);
+    public ReviewServiceImpl(ReviewRepository reviewRepository, ReviewMapper reviewMapper) {
+        this.reviewRepository = reviewRepository;
+        this.reviewMapper = reviewMapper;
     }
 
     @Override
-    public List<Review> getAllReviews() {
-        return reviewRepository.findAll();
+    public ReviewResponse createReview(ReviewRequest request) {
+        Review review = reviewMapper.toEntity(request);
+        Review savedReview = reviewRepository.save(review);
+        return reviewMapper.toResponse(savedReview);
     }
 
     @Override
-    public Review getReviewById(Long id) {
-        return reviewRepository.findById(id).orElse(null);
+    public List<ReviewResponse> getAllReviews() {
+        return reviewRepository.findAll()
+                .stream()
+                .map(reviewMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public ReviewResponse getReviewById(Long id) {
+        return reviewRepository.findById(id)
+                .map(reviewMapper::toResponse)
+                .orElse(null);
     }
 
     @Override
