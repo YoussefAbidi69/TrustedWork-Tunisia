@@ -7,14 +7,14 @@ import tn.esprit.reviewservice.repository.ReviewRepository;
 import tn.esprit.reviewservice.service.interfaces.IReviewService;
 
 import java.util.List;
-
-@Service
 @RequiredArgsConstructor
+@Service
 public class ReviewServiceImpl implements IReviewService {
 
     private final ReviewRepository reviewRepository;
 
-    @Override
+
+@Override
     public Review createReview(Review review) {
         return reviewRepository.save(review);
     }
