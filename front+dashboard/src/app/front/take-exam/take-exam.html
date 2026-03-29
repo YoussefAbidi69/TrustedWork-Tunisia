@@ -1,0 +1,179 @@
+<div class="container py-5">
+
+  <!-- LISTE EXAMENS -->
+  <div *ngIf="!examStarted && !examFinished">
+    <div class="mb-4">
+      <h4 class="fw-bold text-primary mb-1">📝 Passer un Examen</h4>
+      <p class="text-muted">Certifiez vos compétences et obtenez des badges</p>
+    </div>
+
+    <div *ngIf="loading" class="text-center p-5">
+      <div class="spinner-border text-primary"></div>
+    </div>
+
+    <div class="row g-4" *ngIf="!loading">
+      <div class="col-md-4" *ngFor="let e of exams">
+        <div class="card h-100 p-4"
+             style="border-radius:16px; border:none;
+                    box-shadow:0 2px 10px rgba(0,0,0,0.08);">
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <div style="width:50px; height:50px; border-radius:12px;
+                        background:#1a237e; display:flex;
+                        align-items:center; justify-content:center;">
+              <i class="fas fa-file-alt text-white"></i>
+            </div>
+            <div>
+              <h6 class="fw-bold mb-0">{{ e.domaine }}</h6>
+              <small class="text-muted">Certification officielle</small>
+            </div>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <div class="p-2 rounded text-center" style="background:#f8f9ff;">
+                <div class="fw-bold text-primary">{{ e.dureeMinutes }}</div>
+                <small class="text-muted">minutes</small>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="p-2 rounded text-center" style="background:#f8f9ff;">
+                <div class="fw-bold text-success">{{ e.scoreMinimum }}%</div>
+                <small class="text-muted">score min</small>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-primary w-100 mt-auto" (click)="startExam(e)">
+            <i class="fas fa-play me-2"></i>Commencer
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="exams.length === 0" class="col-12 text-center p-5">
+        <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+        <p class="text-muted">Aucun examen disponible</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXAMEN EN COURS -->
+  <div *ngIf="examStarted && selectedExam">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h4 class="fw-bold text-primary">📝 {{ selectedExam.domaine }}</h4>
+      <div class="d-flex align-items-center gap-3">
+        <div class="px-3 py-2 rounded fw-bold"
+             [style.background]="timeLeft < 60 ? '#fce4ec' : '#e8f5e9'"
+             [style.color]="timeLeft < 60 ? '#c62828' : '#2e7d32'">
+          <i class="fas fa-clock me-2"></i>{{ formatTime(timeLeft) }}
+        </div>
+        <span class="badge bg-primary">{{ questions.length }} questions</span>
+      </div>
+    </div>
+
+    <div class="progress mb-4" style="height:8px; border-radius:4px;">
+      <div class="progress-bar bg-primary"
+           [style.width]="(Object.keys(answers).length / questions.length * 100) + '%'">
+      </div>
+    </div>
+
+    <div *ngIf="questions.length === 0" class="alert alert-warning">
+      <i class="fas fa-exclamation-triangle me-2"></i>
+      Aucune question disponible pour cet examen.
+    </div>
+
+    <div *ngFor="let q of questions; let i = index"
+         class="card mb-4"
+         style="border-radius:12px; border:none;
+                box-shadow:0 2px 10px rgba(0,0,0,0.08);">
+      <div class="card-body p-4">
+        <div class="d-flex gap-3 mb-3">
+          <span class="badge bg-primary rounded-circle px-2 py-1">
+            {{ i + 1 }}
+          </span>
+          <h6 class="fw-semibold mb-0">{{ q.question }}</h6>
+        </div>
+        <div class="d-flex flex-column gap-2">
+          <div *ngFor="let choix of q.choix"
+               class="p-3 rounded"
+               [style.background]="answers[i] === choix ? '#e3f2fd' : '#f8f9ff'"
+               [style.border]="answers[i] === choix ?
+                 '2px solid #1a237e' : '2px solid transparent'"
+               [style.cursor]="'pointer'"
+               (click)="answers[i] = choix">
+            <i class="fas me-2"
+               [ngClass]="answers[i] === choix ?
+                 'fa-check-circle text-primary' : 'fa-circle text-muted'">
+            </i>
+            {{ choix }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-center mt-4">
+      <button class="btn btn-success btn-lg px-5" (click)="submitExam()">
+        <i class="fas fa-paper-plane me-2"></i>Soumettre l'examen
+      </button>
+    </div>
+  </div>
+
+  <!-- RESULTAT -->
+  <div *ngIf="examFinished && selectedExam" class="text-center py-5">
+    <div class="card mx-auto p-5"
+         style="max-width:500px; border-radius:20px; border:none;
+                box-shadow:0 4px 20px rgba(0,0,0,0.12);">
+
+      <div class="mb-4">
+        <div *ngIf="score >= selectedExam.scoreMinimum">
+          <div style="font-size:4rem;">🎉</div>
+          <h3 class="fw-bold text-success mt-2">Félicitations !</h3>
+          <p class="text-muted">Vous avez réussi l'examen !</p>
+        </div>
+        <div *ngIf="score < selectedExam.scoreMinimum">
+          <div style="font-size:4rem;">😔</div>
+          <h3 class="fw-bold text-danger mt-2">Échec</h3>
+          <p class="text-muted">Réessayez dans 30 jours</p>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <div class="display-4 fw-bold"
+             [style.color]="score >= selectedExam.scoreMinimum ?
+               '#2e7d32' : '#c62828'">
+          {{ score }}%
+        </div>
+        <small class="text-muted">
+          Score minimum requis : {{ selectedExam.scoreMinimum }}%
+        </small>
+      </div>
+
+      <div *ngIf="score >= selectedExam.scoreMinimum">
+        <div *ngIf="badgeCreated" class="alert alert-success mb-3">
+          <i class="fas fa-certificate me-2"></i>
+          Badge <strong>{{ selectedExam.domaine }}</strong>
+          niveau <strong>{{ badgeNiveau }}</strong>
+          ajouté à votre profil ! ✅
+        </div>
+        <div *ngIf="!badgeCreated" class="alert alert-info mb-3">
+          <div class="spinner-border spinner-border-sm me-2"></div>
+          Création du badge en cours...
+        </div>
+      </div>
+
+      <div *ngIf="score < selectedExam.scoreMinimum"
+           class="alert alert-danger mb-3">
+        <i class="fas fa-times-circle me-2"></i>
+        Score insuffisant — retry autorisé après 30 jours
+      </div>
+
+      <div class="d-flex gap-3 justify-content-center">
+        <button class="btn btn-outline-primary" (click)="retry()">
+          <i class="fas fa-redo me-2"></i>Autre examen
+        </button>
+        <button class="btn btn-primary" (click)="goToMySkills()">
+          <i class="fas fa-certificate me-2"></i>Mes Badges
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,128 @@
+<div class="container py-5">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h4 class="fw-bold text-primary mb-1">🛡️ Trust Passport</h4>
+      <p class="text-muted mb-0">
+        Document officiel de certification TrustedWork
+      </p>
+    </div>
+    <button class="btn btn-primary" (click)="print()">
+      <i class="fas fa-download me-2"></i>Télécharger PDF
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="text-center p-5">
+    <div class="spinner-border text-primary"></div>
+  </div>
+
+  <!-- PASSPORT CARD -->
+  <div *ngIf="!loading && profile" id="passport-card">
+    <div class="card p-0 overflow-hidden"
+         style="border-radius:20px; border:none;
+                box-shadow:0 8px 30px rgba(0,0,0,0.15); max-width:700px;
+                margin:0 auto;">
+
+      <!-- HEADER BLEU -->
+      <div class="p-4 text-white"
+           style="background: linear-gradient(135deg, #1a237e, #283593);">
+        <div class="d-flex align-items-center gap-4">
+          <div style="width:80px; height:80px; border-radius:50%;
+                      background:rgba(255,255,255,0.2); border:3px solid white;
+                      display:flex; align-items:center; justify-content:center;">
+            <i class="fas fa-user fa-2x"></i>
+          </div>
+          <div>
+            <h3 class="fw-bold mb-1">{{ profile.titre }}</h3>
+            <p class="mb-1 opacity-75">{{ profile.domaineExpertise }}</p>
+            <div class="d-flex gap-2">
+              <span class="badge bg-white text-primary">
+                ✅ Profil Vérifié
+              </span>
+              <span class="badge bg-success">
+                TrustedWork Certified
+              </span>
+            </div>
+          </div>
+          <div class="ms-auto text-end">
+            <div class="opacity-75 small">Taux horaire</div>
+            <div class="fs-4 fw-bold">{{ profile.tauxHoraire }} DT/h</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BODY -->
+      <div class="p-4">
+
+        <!-- INFO -->
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <div class="p-3 rounded" style="background:#f8f9ff;">
+              <small class="text-muted">📍 Localisation</small>
+              <div class="fw-semibold">{{ profile.localisation }}</div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="p-3 rounded" style="background:#f8f9ff;">
+              <small class="text-muted">📊 Disponibilité</small>
+              <div class="fw-semibold">{{ profile.disponibilite }}</div>
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="p-3 rounded" style="background:#f8f9ff;">
+              <small class="text-muted">📋 Bio</small>
+              <div>{{ profile.bio }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SKILLS -->
+        <h6 class="fw-bold mb-3">
+          🏅 Compétences Certifiées ({{ skills.length }})
+        </h6>
+
+        <div *ngIf="skills.length === 0" class="text-muted small mb-4">
+          Aucune compétence certifiée pour l'instant
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 mb-4">
+          <span *ngFor="let s of skills"
+                class="badge rounded-pill px-3 py-2 fs-6"
+                [ngClass]="getNiveauClass(s.niveau)">
+            {{ s.nomSkill }} — {{ s.niveau }}
+          </span>
+        </div>
+
+        <!-- QR CODE SIMULÉ -->
+        <div class="d-flex align-items-center gap-4 p-3 rounded"
+             style="background:#f0f4ff; border:2px dashed #1a237e;">
+          <div style="width:80px; height:80px; background:white;
+                      border-radius:8px; display:flex;
+                      align-items:center; justify-content:center;
+                      font-size:3rem;">
+            ▣
+          </div>
+          <div>
+            <div class="fw-bold text-primary">QR Code de vérification</div>
+            <small class="text-muted">
+              Scannez pour vérifier l'authenticité de ce profil
+            </small>
+            <div class="mt-1">
+              <small style="font-family:monospace; color:#1a237e;">
+                trustedwork.tn/verify/{{ profile.id }}
+              </small>
+            </div>
+          </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="text-center mt-4 pt-3"
+             style="border-top:1px solid #f0f0f0;">
+          <small class="text-muted">
+            Généré par TrustedWork Tunisia — ESPRIT 2024/2025
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

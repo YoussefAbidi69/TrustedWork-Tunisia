@@ -1,0 +1,90 @@
+<div class="container py-5">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h4 class="fw-bold text-primary mb-1">🤝 Endorsements</h4>
+      <p class="text-muted mb-0">Validez les compétences de vos collègues</p>
+    </div>
+    <button class="btn btn-primary" (click)="showForm = !showForm">
+      <i class="fas fa-plus me-2"></i>Endorser un freelancer
+    </button>
+  </div>
+
+  <!-- SUCCES -->
+  <div *ngIf="success" class="alert alert-success">
+    <i class="fas fa-check-circle me-2"></i>
+    Endorsement envoyé ! En attente de modération admin.
+  </div>
+
+  <!-- FORMULAIRE -->
+  <div class="form-card mb-4" *ngIf="showForm">
+    <h6 class="fw-bold mb-3">✍️ Valider un collègue</h6>
+    <div class="row g-3">
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">Freelancer à valider</label>
+        <select class="form-select" [(ngModel)]="newEndorsement.toProfileId">
+          <option [value]="0">-- Choisir --</option>
+          <option *ngFor="let p of profiles" [value]="p.id">
+            {{ p.titre }} — {{ p.localisation }}
+          </option>
+        </select>
+      </div>
+      <div class="col-md-8">
+        <label class="form-label fw-semibold">Commentaire</label>
+        <input type="text" class="form-control"
+               [(ngModel)]="newEndorsement.commentaire"
+               placeholder="Ex: Excellent développeur, très professionnel...">
+      </div>
+      <div class="col-12 d-flex gap-2">
+        <button class="btn btn-primary" (click)="sendEndorsement()">
+          <i class="fas fa-paper-plane me-2"></i>Envoyer
+        </button>
+        <button class="btn btn-outline-secondary"
+                (click)="showForm = false">
+          Annuler
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LISTE -->
+  <div class="data-table">
+    <div class="table-header">
+      <h6><i class="fas fa-handshake me-2"></i>
+        Endorsements reçus ({{ endorsements.length }})
+      </h6>
+    </div>
+
+    <div *ngIf="loading" class="text-center p-5">
+      <div class="spinner-border text-primary"></div>
+    </div>
+
+    <div *ngIf="!loading && endorsements.length === 0"
+         class="text-center p-5">
+      <i class="fas fa-handshake fa-3x text-muted mb-3"></i>
+      <p class="text-muted">Aucun endorsement reçu pour l'instant</p>
+    </div>
+
+    <div class="p-3" *ngFor="let e of endorsements">
+      <div class="d-flex align-items-center gap-3 p-3 rounded"
+           style="background:#f8f9ff;">
+        <div style="width:40px; height:40px; border-radius:50%;
+                    background:#1a237e; display:flex;
+                    align-items:center; justify-content:center;">
+          <i class="fas fa-user text-white"></i>
+        </div>
+        <div class="flex-grow-1">
+          <div class="fw-semibold">{{ e.commentaire }}</div>
+          <small class="text-muted">
+            De: Freelancer #{{ e.fromProfileId }}
+          </small>
+        </div>
+        <span class="badge"
+              [ngClass]="e.isModerated ?
+                'bg-success' : 'bg-warning text-dark'">
+          {{ e.isModerated ? '✅ Validé' : '⏳ En attente' }}
+        </span>
+      </div>
+    </div>
+  </div>
+</div>

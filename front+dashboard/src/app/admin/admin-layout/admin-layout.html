@@ -1,0 +1,57 @@
+<div class="d-flex">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-brand">
+      <h4>🛡️ TrustedWork</h4>
+      <span>Module 1 — Freelancer</span>
+    </div>
+    <nav class="mt-3">
+      <p class="nav-section-title">Administration</p>
+      <a routerLink="/admin/dashboard" routerLinkActive="active"
+         class="nav-link d-flex align-items-center">
+        <i class="fas fa-tachometer-alt"></i> Dashboard
+      </a>
+      <a routerLink="/admin/profiles" routerLinkActive="active"
+         class="nav-link d-flex align-items-center">
+        <i class="fas fa-users"></i> Profils
+      </a>
+      <a routerLink="/admin/skills" routerLinkActive="active"
+         class="nav-link d-flex align-items-center">
+        <i class="fas fa-certificate"></i> Skills
+      </a>
+      <a routerLink="/admin/exams" routerLinkActive="active"
+         class="nav-link d-flex align-items-center">
+        <i class="fas fa-file-alt"></i> Examens
+      </a>
+      <a routerLink="/admin/endorsements" routerLinkActive="active"
+   class="nav-link d-flex align-items-center">
+  <i class="fas fa-handshake"></i> Endorsements
+</a>
+      <p class="nav-section-title mt-3">Freelancer</p>
+      <a routerLink="/front/home" routerLinkActive="active"
+         class="nav-link d-flex align-items-center">
+        <i class="fas fa-home"></i> Accueil
+      </a>
+      <a routerLink="/front/profile" routerLinkActive="active"
+         class="nav-link d-flex align-items-center">
+        <i class="fas fa-user"></i> Mon Profil
+      </a>
+    </nav>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content flex-grow-1">
+    <div class="top-navbar">
+      <h5><i class="fas fa-shield-alt me-2"></i>TrustedWork Tunisia</h5>
+      <div class="d-flex align-items-center gap-3">
+        <span class="badge bg-success">Backend 8081 ✅</span>
+        <i class="fas fa-user-circle fa-lg text-primary"></i>
+      </div>
+    </div>
+    <div class="content-area">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,93 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="fw-bold text-primary mb-1">🏅 Skill Badges</h4>
+    <p class="text-muted mb-0">Compétences certifiées des freelancers</p>
+  </div>
+  <button class="btn btn-primary" (click)="openAddForm()">
+    <i class="fas fa-plus me-2"></i>Ajouter un Skill
+  </button>
+</div>
+
+<!-- FORMULAIRE -->
+<div class="form-card mb-4" *ngIf="showForm">
+  <h6 class="fw-bold mb-3">{{ isEditMode ? '✏️ Modifier Skill' : '➕ Nouveau Skill Badge' }}</h6>
+  <div class="row g-3">
+    <div class="col-md-3">
+      <label class="form-label fw-semibold">Profil</label>
+      <select class="form-select" [(ngModel)]="newSkill.profileId">
+        <option [value]="0">-- Choisir --</option>
+        <option *ngFor="let p of profiles" [value]="p.id">{{ p.titre }}</option>
+      </select>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label fw-semibold">Compétence</label>
+      <input type="text" class="form-control" [(ngModel)]="newSkill.nomSkill"
+             placeholder="Ex: React, Python...">
+    </div>
+    <div class="col-md-2">
+      <label class="form-label fw-semibold">Niveau</label>
+      <select class="form-select" [(ngModel)]="newSkill.niveau">
+        <option value="JUNIOR">Junior</option>
+        <option value="CONFIRMED">Confirmé</option>
+        <option value="EXPERT">Expert</option>
+      </select>
+    </div>
+    <div class="col-md-2">
+      <label class="form-label fw-semibold">Date validation</label>
+      <input type="date" class="form-control" [(ngModel)]="newSkill.dateValidation">
+    </div>
+    <div class="col-md-2 d-flex align-items-end gap-2">
+      <button class="btn btn-primary w-100" (click)="save()">
+        <i class="fas fa-save me-1"></i>{{ isEditMode ? 'Modifier' : 'Sauvegarder' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- TABLEAU -->
+<div class="data-table">
+  <div class="table-header">
+    <h6><i class="fas fa-certificate me-2"></i>Liste des skills ({{ skills.length }})</h6>
+  </div>
+
+  <div *ngIf="loading" class="text-center p-5">
+    <div class="spinner-border text-primary"></div>
+  </div>
+
+  <div *ngIf="!loading && skills.length === 0" class="text-center p-5">
+    <i class="fas fa-certificate fa-3x text-muted mb-3"></i>
+    <p class="text-muted">Aucun skill trouvé</p>
+  </div>
+
+  <table class="table table-hover mb-0" *ngIf="!loading && skills.length > 0">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Compétence</th>
+        <th>Niveau</th>
+        <th>Date Validation</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let s of skills">
+        <td><strong>#{{ s.id }}</strong></td>
+        <td><i class="fas fa-code text-primary me-2"></i>{{ s.nomSkill }}</td>
+        <td>
+          <span class="badge rounded-pill px-3 py-2" [ngClass]="getNiveauClass(s.niveau)">
+            {{ s.niveau }}
+          </span>
+        </td>
+        <td>{{ s.dateValidation }}</td>
+        <td>
+          <button class="btn btn-sm btn-outline-primary me-2" (click)="openEditForm(s)">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button class="btn btn-sm btn-outline-danger" (click)="delete(s.id!)">
+            <i class="fas fa-trash"></i>
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

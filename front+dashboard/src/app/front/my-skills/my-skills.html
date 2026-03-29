@@ -1,0 +1,101 @@
+<div class="container py-5">
+
+  <!-- HEADER -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h4 class="fw-bold text-primary mb-1">🏅 Mes Badges Certifiés</h4>
+      <p class="text-muted mb-0">Compétences validées par examen ou certificat</p>
+    </div>
+    <a routerLink="/front/take-exam" class="btn btn-primary">
+      <i class="fas fa-plus me-2"></i>Passer un Examen
+    </a>
+  </div>
+
+  <!-- LOADING -->
+  <div *ngIf="loading" class="text-center p-5">
+    <div class="spinner-border text-primary"></div>
+    <p class="mt-2 text-muted">Chargement des badges...</p>
+  </div>
+
+  <!-- AUCUN BADGE -->
+  <div *ngIf="!loading && skills.length === 0" class="text-center p-5">
+    <div style="width:80px; height:80px; border-radius:50%; background:#f8f9ff;
+                display:flex; align-items:center; justify-content:center; margin:0 auto 20px;">
+      <i class="fas fa-certificate fa-2x text-muted"></i>
+    </div>
+    <h5 class="text-muted">Aucun badge certifié</h5>
+    <p class="text-muted">Passez un examen pour obtenir votre premier badge !</p>
+    <a routerLink="/front/take-exam" class="btn btn-primary mt-2">
+      <i class="fas fa-play me-2"></i>Commencer un examen
+    </a>
+  </div>
+
+  <!-- GRILLE BADGES -->
+  <div class="row g-4" *ngIf="!loading && skills.length > 0">
+    <div class="col-md-4" *ngFor="let s of skills">
+      <div class="card h-100 text-center p-4"
+           style="border-radius:16px; border:none;
+                  box-shadow:0 2px 10px rgba(0,0,0,0.08);">
+
+        <!-- ICONE NIVEAU -->
+        <div class="mx-auto mb-3"
+             style="width:70px; height:70px; border-radius:50%;
+                    background: linear-gradient(135deg,#1a237e,#283593);
+                    display:flex; align-items:center; justify-content:center;">
+          <i [ngClass]="getNiveauIcon(s.niveau)" class="fa-2x text-white"></i>
+        </div>
+
+        <h5 class="fw-bold mb-1">{{ s.nomSkill }}</h5>
+
+        <span class="badge rounded-pill px-3 py-2 mb-3"
+              [ngClass]="getNiveauClass(s.niveau)">
+          {{ s.niveau }}
+        </span>
+
+        <div class="text-muted small">
+          <i class="fas fa-calendar-check me-1"></i>
+          Validé le {{ s.dateValidation }}
+        </div>
+
+        <!-- BADGE ANTI-PLAGIAT -->
+        <div class="mt-3 p-2 rounded"
+             style="background:#f0f4ff; font-size:0.75rem; color:#1a237e;">
+          <i class="fas fa-shield-alt me-1"></i>
+          Certifié anti-plagiat MD5
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="row g-3 mt-4" *ngIf="!loading && skills.length > 0">
+    <div class="col-md-4">
+      <div class="card text-center p-3"
+           style="border-radius:12px; border:none; background:#e3f2fd;">
+        <div class="fw-bold text-primary fs-4">
+          {{ skills.length }}
+        </div>
+        <small class="text-muted">Total Badges</small>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card text-center p-3"
+           style="border-radius:12px; border:none; background:#e8f5e9;">
+        <div class="fw-bold text-success fs-4">
+          {{ skills.length }}
+        </div>
+        <small class="text-muted">Badges Validés</small>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card text-center p-3"
+           style="border-radius:12px; border:none; background:#fff3e0;">
+        <div class="fw-bold text-warning fs-4">
+          {{ skills.length > 2 ? 'EXPERT' : skills.length > 0 ? 'CONFIRMED' : 'JUNIOR' }}
+        </div>
+        <small class="text-muted">Niveau Global</small>
+      </div>
+    </div>
+  </div>
+
+</div>

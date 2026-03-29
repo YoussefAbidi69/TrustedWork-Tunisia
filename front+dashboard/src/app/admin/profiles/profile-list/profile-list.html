@@ -1,0 +1,64 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="fw-bold text-primary mb-1">👥 Profils Freelancers</h4>
+    <p class="text-muted mb-0">Gestion des profils de la plateforme</p>
+  </div>
+  <a routerLink="/admin/profiles/new" class="btn btn-primary">
+    <i class="fas fa-plus me-2"></i>Nouveau Profil
+  </a>
+</div>
+
+<div class="data-table">
+  <div class="table-header">
+    <h6><i class="fas fa-users me-2"></i>Liste des profils ({{ profiles.length }})</h6>
+  </div>
+
+  <div *ngIf="loading" class="text-center p-5">
+    <div class="spinner-border text-primary"></div>
+    <p class="mt-2 text-muted">Chargement...</p>
+  </div>
+
+  <div *ngIf="!loading && profiles.length === 0" class="text-center p-5">
+    <i class="fas fa-users fa-3x text-muted mb-3"></i>
+    <p class="text-muted">Aucun profil trouvé</p>
+    <a routerLink="/admin/profiles/new" class="btn btn-primary">
+      <i class="fas fa-plus me-2"></i>Créer le premier profil
+    </a>
+  </div>
+
+  <table class="table table-hover mb-0" *ngIf="!loading && profiles.length > 0">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Titre</th>
+        <th>Domaine</th>
+        <th>Localisation</th>
+        <th>Taux/h</th>
+        <th>Disponibilité</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let p of profiles">
+        <td><strong>#{{ p.id }}</strong></td>
+        <td>{{ p.titre }}</td>
+        <td>{{ p.domaineExpertise }}</td>
+        <td><i class="fas fa-map-marker-alt text-muted me-1"></i>{{ p.localisation }}</td>
+        <td><strong>{{ p.tauxHoraire }} DT/h</strong></td>
+        <td>
+          <span class="badge rounded-pill px-3 py-2" [ngClass]="getBadgeClass(p.disponibilite)">
+            {{ p.disponibilite }}
+          </span>
+        </td>
+        <td>
+          <button class="btn btn-sm btn-outline-primary me-2" (click)="edit(p.id!)">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button class="btn btn-sm btn-outline-danger" (click)="delete(p.id!)">
+            <i class="fas fa-trash"></i>
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

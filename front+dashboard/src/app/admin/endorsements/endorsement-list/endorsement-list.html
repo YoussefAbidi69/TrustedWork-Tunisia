@@ -1,0 +1,176 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="fw-bold text-primary mb-1">🤝 Gestion Endorsements</h4>
+    <p class="text-muted mb-0">Modération des validations croisées</p>
+  </div>
+  <div class="d-flex gap-2">
+    <button class="btn btn-outline-secondary btn-sm"
+            [class.active]="filterStatus === 'all'"
+            (click)="filterAll()">
+      <i class="fas fa-list me-1"></i>Tous
+    </button>
+    <button class="btn btn-outline-warning btn-sm"
+            [class.active]="filterStatus === 'pending'"
+            (click)="filterPending()">
+      <i class="fas fa-clock me-1"></i>En attente
+    </button>
+    <button class="btn btn-outline-success btn-sm"
+            [class.active]="filterStatus === 'approved'"
+            (click)="filterApproved()">
+      <i class="fas fa-check me-1"></i>Validés
+    </button>
+    <button class="btn btn-outline-primary btn-sm" (click)="loadAll()">
+      <i class="fas fa-sync me-1"></i>Recharger
+    </button>
+  </div>
+</div>
+
+<!-- FILTRE -->
+<div class="form-card mb-4">
+  <div class="row g-3 align-items-end">
+    <div class="col-md-4">
+      <label class="form-label fw-semibold">
+        Rechercher par ID Profil
+      </label>
+      <input type="number" class="form-control"
+             [(ngModel)]="filterProfileId"
+             placeholder="Ex: 1, 2, 3...">
+    </div>
+    <div class="col-md-3 d-flex gap-2">
+      <button class="btn btn-primary" (click)="searchByProfile()">
+        <i class="fas fa-search me-2"></i>Rechercher
+      </button>
+      <button class="btn btn-outline-secondary" (click)="filterAll()">
+        Reset
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card stat-card p-3">
+      <div class="d-flex align-items-center gap-3">
+        <div class="stat-icon" style="background:#1a237e">
+          <i class="fas fa-handshake"></i>
+        </div>
+        <div>
+          <div class="stat-number">{{ allEndorsements.length }}</div>
+          <div class="stat-label">Total</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card stat-card p-3">
+      <div class="d-flex align-items-center gap-3">
+        <div class="stat-icon" style="background:#2e7d32">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <div>
+          <div class="stat-number">{{ getApproved() }}</div>
+          <div class="stat-label">Validés</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card stat-card p-3">
+      <div class="d-flex align-items-center gap-3">
+        <div class="stat-icon" style="background:#e65100">
+          <i class="fas fa-clock"></i>
+        </div>
+        <div>
+          <div class="stat-number">{{ getPending() }}</div>
+          <div class="stat-label">En attente</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TABLEAU -->
+<div class="data-table">
+  <div class="table-header">
+    <h6>
+      <i class="fas fa-handshake me-2"></i>
+      Endorsements ({{ endorsements.length }})
+    </h6>
+  </div>
+
+  <div *ngIf="loading" class="text-center p-5">
+    <div class="spinner-border text-primary"></div>
+    <p class="mt-2 text-muted">Chargement...</p>
+  </div>
+
+  <div *ngIf="!loading && endorsements.length === 0"
+       class="text-center p-5">
+    <i class="fas fa-handshake fa-3x text-muted mb-3"></i>
+    <p class="text-muted">Aucun endorsement trouvé</p>
+  </div>
+
+  <table class="table table-hover mb-0"
+         *ngIf="!loading && endorsements.length > 0">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>De</th>
+        <th>À</th>
+        <th>Commentaire</th>
+        <th>Statut</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let e of endorsements">
+        <td><strong>#{{ e.id }}</strong></td>
+        <td>
+          <span class="badge bg-light text-dark border">
+            <i class="fas fa-user me-1 text-primary"></i>
+            Profil #{{ e.fromProfileId }}
+          </span>
+        </td>
+        <td>
+          <span class="badge bg-light text-dark border">
+            <i class="fas fa-user me-1 text-success"></i>
+            Profil #{{ e.toProfileId }}
+          </span>
+        </td>
+        <td>
+          <span style="max-width:250px; display:block;
+                       overflow:hidden; text-overflow:ellipsis;
+                       white-space:nowrap;"
+                [title]="e.commentaire">
+            {{ e.commentaire }}
+          </span>
+        </td>
+        <td>
+          <span class="badge rounded-pill px-3 py-2"
+                [ngClass]="e.isModerated ?
+                  'badge-confirmed' : 'badge-busy'">
+            {{ e.isModerated ? '✅ Validé' : '⏳ En attente' }}
+          </span>
+        </td>
+        <td>
+          <button *ngIf="!e.isModerated"
+                  class="btn btn-sm btn-success me-2"
+                  (click)="moderate(e.id)"
+                  title="Approuver">
+            <i class="fas fa-check"></i> Approuver
+          </button>
+          <button *ngIf="e.isModerated"
+                  class="btn btn-sm btn-outline-success me-2"
+                  disabled>
+            <i class="fas fa-check-double"></i> Approuvé
+          </button>
+          <button class="btn btn-sm btn-outline-danger"
+                  (click)="delete(e.id)"
+                  title="Supprimer">
+            <i class="fas fa-trash"></i>
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

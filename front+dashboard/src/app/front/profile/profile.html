@@ -1,0 +1,59 @@
+<div class="container py-5">
+
+  <div *ngIf="loading" class="text-center p-5">
+    <div class="spinner-border text-primary"></div>
+  </div>
+
+  <div *ngIf="!loading && !profile" class="text-center p-5">
+    <i class="fas fa-user fa-3x text-muted mb-3"></i>
+    <p class="text-muted">Profil introuvable</p>
+  </div>
+
+  <div *ngIf="profile" class="row g-4">
+    <!-- CARTE PROFIL -->
+    <div class="col-md-4">
+      <div class="card text-center p-4" style="border-radius:16px; border:none;
+           box-shadow:0 2px 10px rgba(0,0,0,0.08);">
+        <div class="mx-auto mb-3" style="width:80px; height:80px; border-radius:50%;
+             background: linear-gradient(135deg,#1a237e,#283593);
+             display:flex; align-items:center; justify-content:center;">
+          <i class="fas fa-user fa-2x text-white"></i>
+        </div>
+        <h5 class="fw-bold">{{ profile.titre }}</h5>
+        <p class="text-muted">{{ profile.domaineExpertise }}</p>
+        <span class="badge rounded-pill px-3 py-2 mb-3"
+              [ngClass]="profile.disponibilite === 'AVAILABLE' ? 'badge-available' :
+                         profile.disponibilite === 'BUSY' ? 'badge-busy' : 'badge-not-available'">
+          {{ profile.disponibilite }}
+        </span>
+        <div class="fw-bold text-primary fs-5">{{ profile.tauxHoraire }} DT/h</div>
+        <div class="text-muted mt-1">
+          <i class="fas fa-map-marker-alt me-1"></i>{{ profile.localisation }}
+        </div>
+      </div>
+    </div>
+
+    <!-- DETAILS -->
+    <div class="col-md-8">
+      <div class="card p-4 mb-4" style="border-radius:16px; border:none;
+           box-shadow:0 2px 10px rgba(0,0,0,0.08);">
+        <h6 class="fw-bold mb-3">📋 À propos</h6>
+        <p class="text-muted">{{ profile.bio }}</p>
+      </div>
+
+      <div class="card p-4" style="border-radius:16px; border:none;
+           box-shadow:0 2px 10px rgba(0,0,0,0.08);">
+        <h6 class="fw-bold mb-3">🛡️ Trust Passport</h6>
+        <div class="d-flex align-items-center gap-3 p-3"
+             style="background:#f8f9ff; border-radius:8px;">
+          <i class="fas fa-shield-alt fa-2x text-primary"></i>
+          <div>
+            <div class="fw-semibold">Freelancer Certifié TrustedWork</div>
+            <small class="text-muted">Toutes les compétences sont vérifiées et certifiées</small>
+          </div>
+          <span class="badge bg-success ms-auto">✅ Vérifié</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

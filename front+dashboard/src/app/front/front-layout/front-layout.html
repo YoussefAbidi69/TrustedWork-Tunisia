@@ -1,0 +1,46 @@
+<div>
+  <!-- NAVBAR FREELANCER -->
+  <nav class="navbar navbar-expand-lg"
+       style="background: linear-gradient(90deg, #1a237e, #283593);">
+    <div class="container-fluid px-4">
+      <a class="navbar-brand text-white fw-bold">
+        🛡️ TrustedWork
+      </a>
+      <div class="d-flex align-items-center gap-3 flex-wrap">
+        <a routerLink="/front/home" routerLinkActive="active"
+           class="nav-link text-white opacity-75">
+          <i class="fas fa-home me-1"></i>Accueil
+        </a>
+        <a routerLink="/front/profile" routerLinkActive="active"
+           class="nav-link text-white opacity-75">
+          <i class="fas fa-user me-1"></i>Mon Profil
+        </a>
+        <a routerLink="/front/my-skills" routerLinkActive="active"
+           class="nav-link text-white opacity-75">
+          <i class="fas fa-certificate me-1"></i>Mes Badges
+        </a>
+        <a routerLink="/front/take-exam" routerLinkActive="active"
+           class="nav-link text-white opacity-75">
+          <i class="fas fa-file-alt me-1"></i>Passer Examen
+        </a>
+        <a routerLink="/front/endorsements" routerLinkActive="active"
+           class="nav-link text-white opacity-75">
+          <i class="fas fa-handshake me-1"></i>Endorsements
+        </a>
+        <a routerLink="/front/passport" routerLinkActive="active"
+           class="nav-link text-white opacity-75">
+          <i class="fas fa-id-card me-1"></i>Trust Passport
+        </a>
+        <a routerLink="/admin/dashboard"
+           class="btn btn-outline-light btn-sm ms-3">
+          <i class="fas fa-cog me-1"></i>Admin
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- CONTENU -->
+  <div style="min-height: 100vh; background: #f4f6f9;">
+    <router-outlet></router-outlet>
+  </div>
+</div>

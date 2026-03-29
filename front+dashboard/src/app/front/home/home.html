@@ -1,0 +1,54 @@
+<!-- HERO -->
+<div style="background: linear-gradient(135deg, #1a237e, #283593); color: white; padding: 60px 40px;">
+  <div class="container">
+    <h1 class="fw-bold mb-3">🛡️ TrustedWork Tunisia</h1>
+    <p class="lead mb-4">Trouvez des freelancers certifiés et de confiance</p>
+    <span class="badge bg-light text-primary fs-6 px-3 py-2">
+      {{ profiles.length }} freelancers disponibles
+    </span>
+  </div>
+</div>
+
+<!-- LISTE PROFILS -->
+<div class="container py-5">
+  <h4 class="fw-bold mb-4">👥 Freelancers disponibles</h4>
+
+  <div *ngIf="loading" class="text-center p-5">
+    <div class="spinner-border text-primary"></div>
+  </div>
+
+  <div class="row g-4" *ngIf="!loading">
+    <div class="col-md-4" *ngFor="let p of profiles">
+      <div class="card h-100" style="border-radius:12px; border:none; box-shadow:0 2px 10px rgba(0,0,0,0.08);">
+        <div class="card-body p-4">
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <div style="width:50px; height:50px; border-radius:50%; background:#1a237e;
+                        display:flex; align-items:center; justify-content:center;">
+              <i class="fas fa-user text-white"></i>
+            </div>
+            <div>
+              <h6 class="fw-bold mb-0">{{ p.titre }}</h6>
+              <small class="text-muted">{{ p.domaineExpertise }}</small>
+            </div>
+          </div>
+          <p class="text-muted small mb-3">{{ p.bio }}</p>
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="fw-bold text-primary">{{ p.tauxHoraire }} DT/h</span>
+            <span class="badge rounded-pill px-3" [ngClass]="getBadgeClass(p.disponibilite)">
+              {{ p.disponibilite }}
+            </span>
+          </div>
+          <div class="mt-2">
+            <i class="fas fa-map-marker-alt text-muted me-1"></i>
+            <small class="text-muted">{{ p.localisation }}</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 text-center" *ngIf="profiles.length === 0">
+      <i class="fas fa-users fa-3x text-muted mb-3"></i>
+      <p class="text-muted">Aucun freelancer trouvé</p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,81 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="fw-bold text-primary mb-1">
+      {{ isEditMode ? '✏️ Modifier Profil' : '➕ Nouveau Profil' }}
+    </h4>
+    <p class="text-muted mb-0">
+      {{ isEditMode ? 'Modifier les informations du freelancer' : 'Créer un nouveau profil freelancer' }}
+    </p>
+  </div>
+  <button class="btn btn-outline-secondary" (click)="cancel()">
+    <i class="fas fa-arrow-left me-2"></i>Retour
+  </button>
+</div>
+
+<div *ngIf="success" class="alert alert-success">
+  <i class="fas fa-check-circle me-2"></i>
+  Profil {{ isEditMode ? 'modifié' : 'créé' }} avec succès ! Redirection...
+</div>
+
+<div class="form-card">
+  <div class="row g-3">
+
+    <div class="col-md-6">
+      <label class="form-label fw-semibold">Titre professionnel</label>
+      <input type="text" class="form-control" [(ngModel)]="profile.titre"
+             placeholder="Ex: Développeur Full-Stack Senior">
+    </div>
+
+    <div class="col-md-6">
+      <label class="form-label fw-semibold">Domaine d'expertise</label>
+      <select class="form-select" [(ngModel)]="profile.domaineExpertise">
+        <option value="">-- Choisir --</option>
+        <option *ngFor="let d of domaines" [value]="d">{{ d }}</option>
+      </select>
+    </div>
+
+    <div class="col-12">
+      <label class="form-label fw-semibold">Bio</label>
+      <textarea class="form-control" rows="3" [(ngModel)]="profile.bio"
+                placeholder="Décrivez votre expérience..."></textarea>
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label fw-semibold">Taux horaire (DT)</label>
+      <input type="number" class="form-control" [(ngModel)]="profile.tauxHoraire"
+             placeholder="150">
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label fw-semibold">Localisation</label>
+      <input type="text" class="form-control" [(ngModel)]="profile.localisation"
+             placeholder="Tunis, Sfax...">
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label fw-semibold">Disponibilité</label>
+      <select class="form-select" [(ngModel)]="profile.disponibilite">
+        <option value="AVAILABLE">✅ Disponible</option>
+        <option value="BUSY">🟡 Occupé</option>
+        <option value="NOT_AVAILABLE">🔴 Indisponible</option>
+      </select>
+    </div>
+
+    <div class="col-md-6">
+      <label class="form-label fw-semibold">User ID</label>
+      <input type="number" class="form-control" [(ngModel)]="profile.userId">
+    </div>
+
+    <div class="col-12 mt-4 d-flex gap-3">
+      <button class="btn btn-primary px-4" (click)="save()" [disabled]="loading">
+        <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+        <i *ngIf="!loading" class="fas fa-save me-2"></i>
+        {{ isEditMode ? 'Modifier' : 'Créer' }}
+      </button>
+      <button class="btn btn-outline-secondary px-4" (click)="cancel()">
+        Annuler
+      </button>
+    </div>
+
+  </div>
+</div>
