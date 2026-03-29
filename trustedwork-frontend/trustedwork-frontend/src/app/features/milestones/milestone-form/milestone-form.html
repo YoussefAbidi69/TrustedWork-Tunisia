@@ -1,0 +1,61 @@
+<div class="container">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>{{ isEditMode ? 'Modifier le Jalon' : 'Nouveau Jalon' }}</h2>
+    <a routerLink="/milestones" class="btn btn-secondary">Retour</a>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Chargement...</span>
+        </div>
+      </div>
+
+      <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+      <form *ngIf="!loading" (ngSubmit)="onSubmit()">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Contrat ID *</label>
+            <input type="number" class="form-control" [(ngModel)]="milestone.contractId" name="contractId" required [disabled]="!isClient && !isAdmin">
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Titre *</label>
+            <input type="text" class="form-control" [(ngModel)]="milestone.titre" name="titre" required [disabled]="!isClient && !isAdmin">
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Montant (DT) *</label>
+            <input type="number" class="form-control" [(ngModel)]="milestone.montant" name="montant" required [disabled]="!isClient && !isAdmin">
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Deadline *</label>
+            <input type="date" class="form-control" [(ngModel)]="milestone.deadline" name="deadline" required [disabled]="!isClient && !isAdmin">
+          </div>
+          <div class="col-12 mb-3">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" rows="3" [(ngModel)]="milestone.description" name="description" [disabled]="!isClient && !isAdmin"></textarea>
+          </div>
+
+          <!-- Statut: modifiable par le Freelancer ou Admin -->
+          <div class="col-md-6 mb-3" *ngIf="isEditMode && (isFreelancer || isAdmin)">
+            <label class="form-label">Statut *</label>
+            <select class="form-select" [(ngModel)]="milestone.status" name="status">
+              <option value="PENDING">En attente</option>
+              <option value="IN_PROGRESS">En cours</option>
+              <option value="COMPLETED">Terminé</option>
+              <option value="APPROVED">Approuvé</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-secondary" routerLink="/milestones">Annuler</button>
+          <button type="submit" class="btn btn-primary">
+            {{ isEditMode ? 'Mettre à jour' : 'Créer' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

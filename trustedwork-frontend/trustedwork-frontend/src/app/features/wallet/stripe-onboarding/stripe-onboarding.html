@@ -1,0 +1,96 @@
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0">Configuration Stripe Connect</h4>
+        </div>
+        <div class="card-body text-center">
+          
+          <!-- Loading -->
+          <div *ngIf="loading" class="py-4">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Chargement...</span>
+            </div>
+            <p class="mt-2 text-muted">Vérification de votre compte...</p>
+          </div>
+
+          <!-- Error -->
+          <div *ngIf="error && !loading" class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle"></i>
+            {{ error }}
+          </div>
+
+          <!-- Compte actif -->
+          <div *ngIf="!loading && status === 'ACTIVE'">
+            <div class="mb-4">
+              <i class="bi bi-check-circle-fill text-success" style="font-size: 64px;"></i>
+            </div>
+            <h4 class="text-success">Compte Stripe actif !</h4>
+            <p class="text-muted mt-3">
+              Votre compte Stripe est configuré et actif.<br>
+              Vous pouvez maintenant recevoir vos paiements.
+            </p>
+            <a routerLink="/wallet" class="btn btn-primary mt-3">
+              <i class="bi bi-wallet2"></i> Voir mon portefeuille
+            </a>
+          </div>
+
+          <!-- Compte en attente -->
+          <div *ngIf="!loading && status === 'PENDING'">
+            <div class="mb-4">
+              <i class="bi bi-hourglass-split text-warning" style="font-size: 64px;"></i>
+            </div>
+            <h4 class="text-warning">En attente de vérification</h4>
+            <p class="text-muted mt-3">
+              Votre compte Stripe a été créé et est en cours de vérification.<br>
+              Cela peut prendre quelques minutes.
+            </p>
+            <button class="btn btn-outline-primary mt-3" (click)="checkStatus()">
+              <i class="bi bi-arrow-repeat"></i> Vérifier le statut
+            </button>
+          </div>
+
+          <!-- Compte incomplet - besoin de finaliser -->
+          <div *ngIf="!loading && status === 'INCOMPLETE' && onboardingLink">
+            <div class="mb-4">
+              <i class="bi bi-exclamation-triangle text-warning" style="font-size: 64px;"></i>
+            </div>
+            <h4 class="text-warning">Configuration requise</h4>
+            <p class="text-muted mt-3">
+              Pour recevoir vos paiements, vous devez finaliser votre inscription Stripe.<br>
+              Vous serez redirigé vers Stripe pour compléter votre compte.
+            </p>
+            <button class="btn btn-primary btn-lg mt-3" (click)="redirectToStripe()">
+              <i class="bi bi-stripe"></i> Finaliser sur Stripe
+            </button>
+          </div>
+
+          <!-- Compte non créé -->
+          <div *ngIf="!loading && status === 'NOT_CREATED' && onboardingLink">
+            <div class="mb-4">
+              <i class="bi bi-stripe" style="font-size: 64px; color: #635bff;"></i>
+            </div>
+            <h4>Configurer Stripe Connect</h4>
+            <p class="text-muted mt-3">
+              Stripe Connect vous permet de recevoir vos paiements directement.<br>
+              Cliquez ci-dessous pour créer votre compte Stripe.
+            </p>
+            <button class="btn btn-primary btn-lg mt-3" (click)="redirectToStripe()">
+              <i class="bi bi-stripe"></i> Créer mon compte Stripe
+            </button>
+          </div>
+
+          <hr class="my-4">
+
+          <div class="text-center">
+            <small class="text-muted">
+              Stripe Connect est un service sécurisé.<br>
+              Vos informations bancaires sont protégées.
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

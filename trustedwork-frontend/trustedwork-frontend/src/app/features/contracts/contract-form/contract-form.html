@@ -1,0 +1,70 @@
+<div class="container">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>{{ isEditMode ? 'Modifier le Contrat' : 'Nouveau Contrat' }}</h2>
+    <a routerLink="/contracts" class="btn btn-secondary">Retour</a>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Chargement...</span>
+        </div>
+      </div>
+
+      <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+      <form *ngIf="!loading" (ngSubmit)="onSubmit()">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Titre du Projet *</label>
+            <input type="text" class="form-control" [(ngModel)]="contract.projectTitle" name="projectTitle" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Montant Total (DT) *</label>
+            <input type="number" class="form-control" [(ngModel)]="contract.montantTotal" name="montantTotal" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Freelancer ID *</label>
+            <input type="number" class="form-control" [(ngModel)]="contract.freelancerId" name="freelancerId" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Project ID</label>
+            <input type="number" class="form-control" [(ngModel)]="contract.projectId" name="projectId">
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Taux Commission (%)</label>
+            <input type="number" class="form-control" [(ngModel)]="contract.commissionRate" name="commissionRate">
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">SLA Freelancer (heures)</label>
+            <input type="number" class="form-control" [(ngModel)]="contract.slaFreelancerHeures" name="slaFreelancerHeures">
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">SLA Client (jours)</label>
+            <input type="number" class="form-control" [(ngModel)]="contract.slaClientJours" name="slaClientJours">
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Date Début *</label>
+            <input type="date" class="form-control" [(ngModel)]="contract.dateDebut" name="dateDebut" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Date Fin *</label>
+            <input type="date" class="form-control" [(ngModel)]="contract.dateFin" name="dateFin" required>
+          </div>
+          <div class="col-12 mb-3">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" rows="3" [(ngModel)]="contract.description" name="description"></textarea>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-secondary" routerLink="/contracts">Annuler</button>
+          <button type="submit" class="btn btn-primary">
+            {{ isEditMode ? 'Mettre à jour' : 'Créer' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

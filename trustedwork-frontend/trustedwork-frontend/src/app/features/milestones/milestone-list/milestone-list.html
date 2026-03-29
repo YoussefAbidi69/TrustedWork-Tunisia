@@ -1,0 +1,85 @@
+<div class="container">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Gestion des Jalons</h2>
+    <div *ngIf="isClient || isAdmin">
+      <a routerLink="/contracts" class="btn btn-secondary me-2">Contrats</a>
+      <a *ngIf="contractId" [routerLink]="['/contracts', contractId, 'milestones', 'new']" class="btn btn-primary">
+        + Nouveau Jalon
+      </a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Chargement...</span>
+        </div>
+      </div>
+
+      <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+      <div *ngIf="!loading && !error">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Contrat ID</th>
+                <th>Ordre</th>
+                <th>Titre</th>
+                <th>Montant</th>
+                <th>Deadline</th>
+                <th>Statut</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let milestone of milestones">
+                <td>{{ milestone.id }}</td>
+                <td>{{ milestone.contractId }}</td>
+                <td>{{ milestone.ordre }}</td>
+                <td>{{ milestone.titre }}</td>
+                <td>{{ milestone.montant }} DT</td>
+                <td>{{ milestone.deadline | date:'dd/MM/yyyy' }}</td>
+                <td>
+                  <span [class]="getStatusClass(milestone.status)">
+                    {{ milestone.status }}
+                  </span>
+                </td>
+                <td class="table-actions">
+                  <a [routerLink]="['/milestones', milestone.id]" class="btn btn-sm btn-info me-1">Détails</a>
+                  
+                  <button *ngIf="isFreelancer && milestone.status === 'PENDING'" 
+                          (click)="startMilestone(milestone.id!)" 
+                          class="btn btn-sm btn-primary me-1">Démarrer</button>
+                          
+                  <button *ngIf="isFreelancer && (milestone.status === 'IN_PROGRESS' || milestone.status === 'STARTED')" 
+                          (click)="submitMilestone(milestone.id!)" 
+                          class="btn btn-sm btn-success me-1">Soumettre</button>
+
+                  <button *ngIf="(isClient || isAdmin) && milestone.status === 'SUBMITTED'" 
+                          (click)="approveMilestone(milestone.id!)" 
+                          class="btn btn-sm btn-success me-1">Approuver</button>
+                          
+                  <button *ngIf="(isClient || isAdmin) && milestone.status === 'SUBMITTED'" 
+                          (click)="rejectMilestone(milestone.id!)" 
+                          class="btn btn-sm btn-warning me-1">Rejeter</button>
+
+                  <button *ngIf="isClient || isAdmin" 
+                          (click)="deleteMilestone(milestone.id!)" 
+                          class="btn btn-sm btn-danger">Supprimer</button>
+                </td>
+              </tr>
+              <tr *ngIf="milestones.length === 0">
+                <td colspan="8" class="text-center text-muted py-4">
+                  Aucun jalon trouvé
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,46 @@
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card shadow">
+        <div class="card-body p-5 text-center">
+          
+          <!-- Succès -->
+          <div *ngIf="status === 'success'">
+            <div class="mb-4">
+              <i class="bi bi-check-circle-fill text-success"></i>
+            </div>
+            <h2 class="text-success mb-3">Paiement réussi !</h2>
+            <p class="text-muted mb-4">
+              Votre paiement a été confirmé avec succès.<br>
+              Le contrat est maintenant actif.
+            </p>
+            <a [routerLink]="['/contracts', contractId]" class="btn btn-primary">
+              <i class="bi bi-eye"></i> Voir le contrat
+            </a>
+          </div>
+
+          <!-- Annulation -->
+          <div *ngIf="status === 'cancel'">
+            <div class="mb-4">
+              <i class="bi bi-x-circle-fill text-warning"></i>
+            </div>
+            <h2 class="text-warning mb-3">Paiement annulé</h2>
+            <p class="text-muted mb-4">
+              Vous avez annulé le paiement.<br>
+              Vous pouvez réessayer quand vous voulez.
+            </p>
+            <a [routerLink]="['/contracts', contractId]" class="btn btn-primary">
+              <i class="bi bi-arrow-left"></i> Retour au contrat
+            </a>
+          </div>
+
+          <hr class="my-4">
+
+          <p class="text-muted small mb-0">
+            Une question ? <a href="/contact">Contactez-nous</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

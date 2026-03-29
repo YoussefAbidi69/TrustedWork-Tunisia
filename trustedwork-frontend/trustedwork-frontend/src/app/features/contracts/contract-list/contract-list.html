@@ -1,0 +1,114 @@
+<div class="container">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Gestion des Contrats</h2>
+    <a *ngIf="isClient || isAdmin" routerLink="/contracts/new" class="btn btn-primary">
+      + Nouveau Contrat
+    </a>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <!-- Loading -->
+      <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Chargement...</span>
+        </div>
+      </div>
+
+      <!-- Error -->
+      <div *ngIf="error" class="alert alert-danger">
+        {{ error }}
+      </div>
+
+      <!-- Table -->
+      <div *ngIf="!loading && !error">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Référence</th>
+                <th>Projet</th>
+                <th>Montant</th>
+                <th>Statut</th>
+                <th>Date création</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngFor="let contract of contracts">
+                <tr>
+                  <td>{{ contract.id }}</td>
+                  <td><strong>{{ contract.reference }}</strong></td>
+                  <td>{{ contract.projectTitle }}</td>
+                  <td>{{ contract.montantTotal }} DT</td>
+                  <td>
+                    <span [class]="getStatusClass(contract.status)">
+                      {{ contract.status }}
+                    </span>
+                  </td>
+                  <td>{{ contract.createdAt | date:'dd/MM/yyyy' }}</td>
+                  <td class="table-actions">
+                    <button class="btn btn-sm btn-secondary me-1" (click)="toggleMilestones(contract.id!)">
+                      {{ expandedContracts[contract.id!] ? 'Cacher Jalons' : 'Voir Jalons' }}
+                    </button>
+                    <a [routerLink]="['/contracts', contract.id]" class="btn btn-sm btn-info me-1">Détails</a>
+                    <ng-container *ngIf="isClient || isAdmin">
+                      <a [routerLink]="['/contracts', contract.id, 'edit']" class="btn btn-sm btn-warning me-1">Modifier</a>
+                      <button (click)="deleteContract(contract.id!)" class="btn btn-sm btn-danger">Supprimer</button>
+                    </ng-container>
+                  </td>
+                </tr>
+                <tr *ngIf="expandedContracts[contract.id!]" class="bg-light">
+                  <td colspan="7">
+                    <div class="px-3 py-2 border rounded bg-white shadow-sm mt-1 mb-2">
+                      <h6 class="text-primary mb-2">Jalons pour le contrat {{ contract.reference }}</h6>
+                      
+                      <div *ngIf="loadingMilestones[contract.id!]" class="spinner-border spinner-border-sm text-primary mb-2"></div>
+                      
+                      <table *ngIf="!loadingMilestones[contract.id!] && (milestonesMap[contract.id!]?.length || 0) > 0" class="table table-sm table-bordered mt-2">
+                        <thead class="table-active">
+                          <tr>
+                            <th>Ordre</th>
+                            <th>Titre</th>
+                            <th>Montant</th>
+                            <th>Date limite</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr *ngFor="let m of milestonesMap[contract.id!]">
+                            <td>{{ m.ordre }}</td>
+                            <td>{{ m.titre }}</td>
+                            <td>{{ m.montant }} DT</td>
+                            <td>{{ m.deadline | date:'dd/MM/yyyy' }}</td>
+                            <td><span [class]="getStatusClass(m.status)">{{ m.status }}</span></td>
+                            <td>
+                              <button *ngIf="isFreelancer && m.status === 'PENDING'" (click)="startMilestone(contract.id!, m.id!)" class="btn btn-xs btn-primary me-1">Démarrer</button>
+                              <button *ngIf="isFreelancer && (m.status === 'IN_PROGRESS' || m.status === 'STARTED')" (click)="submitMilestone(contract.id!, m.id!)" class="btn btn-xs btn-success me-1">Soumettre</button>
+                              <button *ngIf="(isClient || isAdmin) && m.status === 'SUBMITTED'" (click)="approveMilestone(contract.id!, m.id!)" class="btn btn-xs btn-success me-1">Approuver</button>
+                              <button *ngIf="(isClient || isAdmin) && m.status === 'SUBMITTED'" (click)="rejectMilestone(contract.id!, m.id!)" class="btn btn-xs btn-warning">Rejeter</button>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                      <div *ngIf="!loadingMilestones[contract.id!] && (!milestonesMap[contract.id!] || milestonesMap[contract.id!]?.length === 0)" class="text-muted fst-italic mt-2 mb-2">
+                        Aucun jalon pour ce contrat.
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </ng-container>
+              <tr *ngIf="contracts.length === 0">
+                <td colspan="7" class="text-center text-muted py-4">
+                  Aucun contrat trouvé
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
