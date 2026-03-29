@@ -1,0 +1,120 @@
+<div class="page animate-fade-in">
+
+    <!-- Header -->
+    <div class="pub-header">
+        <div class="pub-header-text">
+            <h1 class="pub-title">💼 Offres Publiées</h1>
+            <p class="pub-subtitle">{{ filtered.length }} offre{{ filtered.length !== 1 ? 's' : '' }} disponible{{
+                filtered.length !== 1 ? 's' : '' }}</p>
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="filters-bar">
+        <div class="search-wrapper">
+            <span class="search-icon">🔍</span>
+            <input class="search-input" type="text" placeholder="Chercher par titre, localisation..."
+                [value]="searchText" (input)="onSearchChange($any($event.target).value)" />
+        </div>
+
+        <select class="filter-select" [value]="selectedContract" (change)="onContractChange($any($event.target).value)">
+            <option value="">Tous les contrats</option>
+            <option *ngFor="let type of contractTypes" [value]="type">{{ type }}</option>
+        </select>
+
+        <select class="filter-select" [value]="selectedRemote" (change)="onRemoteChange($any($event.target).value)">
+            <option value="">Présentiel & Remote</option>
+            <option value="true">Remote ✅</option>
+            <option value="false">Présentiel uniquement</option>
+        </select>
+
+        <button class="btn-clear" (click)="clearFilters()" *ngIf="searchText || selectedContract || selectedRemote">
+            ✕ Effacer
+        </button>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-state" *ngIf="loading">
+        <div class="spinner"></div>
+        <span>Chargement des offres...</span>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!loading && filtered.length === 0">
+        <span class="empty-icon">📭</span>
+        <p class="empty-title">Aucune offre trouvée</p>
+        <p class="empty-sub">Essayez de modifier vos filtres.</p>
+        <button class="btn btn-outline btn-sm" (click)="clearFilters()">Réinitialiser les filtres</button>
+    </div>
+
+    <!-- Cartes d'offres -->
+    <div class="jobs-grid" *ngIf="!loading && filtered.length > 0">
+        <div class="job-card" *ngFor="let job of filtered" (click)="onViewDetail(job)">
+
+            <!-- Top row -->
+            <div class="job-card-top">
+                <span class="contract-badge contract-{{ job.typeContrat }}">{{ job.typeContrat }}</span>
+                <span class="deadline-badge deadline-soon" *ngIf="isDeadlineSoon(job.deadline)">⏳ Expire bientôt</span>
+                <span class="deadline-badge deadline-expired" *ngIf="isExpired(job.deadline)">🔴 Expirée</span>
+            </div>
+
+            <!-- Titre -->
+            <h2 class="job-title">{{ job.titre }}</h2>
+
+            <!-- Infos rapides -->
+            <div class="job-meta">
+                <span class="meta-item" *ngIf="job.localisation">
+                    📍 {{ job.localisation }}
+                </span>
+                <span class="meta-item remote-tag" *ngIf="job.remote">
+                    🏠 Remote
+                </span>
+                <span class="meta-item"
+                    *ngIf="job.experienceRequiseAns !== null && job.experienceRequiseAns !== undefined">
+                    🎓 {{ job.experienceRequiseAns }} an{{ job.experienceRequiseAns > 1 ? 's' : '' }} d'expérience
+                </span>
+            </div>
+
+            <!-- Salaire -->
+            <div class="salary-row" *ngIf="job.salaireMin || job.salaireMax">
+                <span class="salary-label">Salaire :</span>
+                <span class="salary-value">
+                    {{ job.salaireMin | currency:'TND':'symbol':'1.0-0' }}
+                    <span *ngIf="job.salaireMax"> — {{ job.salaireMax | currency:'TND':'symbol':'1.0-0' }}</span>
+                </span>
+            </div>
+
+            <!-- Description courte -->
+            <p class="job-desc" *ngIf="job.description">
+                {{ job.description | slice:0:120 }}{{ (job.description?.length ?? 0) > 120 ? '...' : '' }}
+
+            </p>
+
+            <!-- Skills -->
+            <div class="skills-row" *ngIf="job.skillsRequis">
+                <span class="skill-chip" *ngFor="let skill of getSkillsArray(job.skillsRequis) | slice:0:5">
+                    {{ skill }}
+                </span>
+                <span class="skill-more" *ngIf="getSkillsArray(job.skillsRequis).length > 5">
+                    +{{ getSkillsArray(job.skillsRequis).length - 5 }}
+                </span>
+            </div>
+
+            <!-- Deadline -->
+            <div class="job-footer">
+                <span class="deadline-text" *ngIf="job.deadline">
+                    📅 Deadline : {{ job.deadline | date:'dd MMM yyyy' }}
+                </span>
+                <span class="candidatures-count"
+                    *ngIf="job.nombreCandidatures !== null && job.nombreCandidatures !== undefined">
+                    👥 {{ job.nombreCandidatures }} candidature{{ job.nombreCandidatures !== 1 ? 's' : '' }}
+                </span>
+                <button class="btn-voir" (click)="$event.stopPropagation(); onViewDetail(job)">
+                    Voir l'offre →
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+</div>

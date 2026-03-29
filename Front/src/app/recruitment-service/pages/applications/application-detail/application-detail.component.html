@@ -1,0 +1,71 @@
+<div class="page animate-fade-in">
+
+    <div class="loading-state" *ngIf="loading">
+        <div class="spinner"></div>
+        <span>Loading application...</span>
+    </div>
+
+    <div *ngIf="!loading && application">
+
+        <div class="page-header">
+            <button class="btn btn-outline btn-sm" (click)="goBack()">← Back to Applications</button>
+            <div class="header-actions">
+                <button class="btn btn-outline btn-sm" (click)="onEdit()">✏️ Edit</button>
+                <button class="btn btn-danger btn-sm" (click)="onDelete()">🗑 Delete</button>
+            </div>
+        </div>
+
+        <!-- Score highlight card -->
+        <div class="score-banner">
+            <div class="score-circle" [style.border-color]="getScoreColor(application.matchingScore)">
+                <span class="score-number" [style.color]="getScoreColor(application.matchingScore)">
+                    {{ application.matchingScore }}
+                </span>
+                <span class="score-unit">%</span>
+            </div>
+            <div class="score-info">
+                <p class="score-label">XAI Matching Score</p>
+                <app-status-badge [status]="application.status || 'PENDING'"></app-status-badge>
+            </div>
+            <div class="score-meta">
+                <span class="meta-chip">📋 Job #{{ application.jobPositionId }}</span>
+                <span class="meta-chip">👤 Freelancer #{{ application.freelancerId }}</span>
+                <span class="meta-chip">🏢 Enterprise #{{ application.entrepriseId }}</span>
+            </div>
+        </div>
+
+        <app-recruitment-card title="Application Details" icon="📋">
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="detail-label">Expected Salary</span>
+                    <span class="detail-value text-primary">
+                        {{ application.pretentionSalariale | number:'1.0-0' }} TND
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Availability</span>
+                    <span class="detail-value">{{ application.disponibilite }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Date Applied</span>
+                    <span class="detail-value">{{ application.datePostulation | date:'longDate' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Last Updated</span>
+                    <span class="detail-value">{{ application.dateMiseAJour | date:'longDate' }}</span>
+                </div>
+                <div class="detail-item full-width">
+                    <span class="detail-label">Cover Letter</span>
+                    <p class="detail-description">{{ application.lettreMotivation }}</p>
+                </div>
+            </div>
+        </app-recruitment-card>
+
+    </div>
+
+    <div *ngIf="!loading && !application" class="not-found">
+        <span>Application not found.</span>
+        <button class="btn btn-outline" (click)="goBack()">Go Back</button>
+    </div>
+
+</div>

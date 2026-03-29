@@ -1,0 +1,88 @@
+<div class="page animate-fade-in">
+    <!-- Loading -->
+    <div class="loading-state" *ngIf="loading">
+        <div class="spinner"></div>
+        <span>Loading...</span>
+    </div>
+
+    <!-- Detail -->
+    <div *ngIf="!loading && jobPosition">
+        <div class="page-header">
+            <button class="btn btn-outline btn-sm" (click)="goBack()">← Back</button>
+            <div class="header-actions">
+                <!-- ✅ Bouton Edit ajouté -->
+                <button class="btn btn-primary btn-sm"
+                    [routerLink]="['/recruitment/job-positions', jobPosition.id, 'edit']">
+                    ✏️ Edit
+                </button>
+                <button class="btn btn-danger btn-sm" (click)="onDelete()">🗑 Delete</button>
+            </div>
+        </div>
+
+        <app-recruitment-card [title]="jobPosition.titre" icon="💼">
+            <div class="detail-grid">
+
+                <div class="detail-item">
+                    <span class="detail-label">Status</span>
+                    <app-status-badge [status]="jobPosition.status"></app-status-badge>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Contract Type</span>
+                    <span class="detail-value">{{ jobPosition.typeContrat }}</span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Location</span>
+                    <span class="detail-value">{{ jobPosition.localisation }}</span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Remote</span>
+                    <span class="detail-value">{{ jobPosition.remote ? 'Yes ✅' : 'No' }}</span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Salary Range</span>
+                    <span class="detail-value text-primary">
+                        {{ jobPosition.salaireMin | currency:'TND':'symbol':'1.0-0' }} —
+                        {{ jobPosition.salaireMax | currency:'TND':'symbol':'1.0-0' }}
+                    </span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Experience Required</span>
+                    <span class="detail-value">{{ jobPosition.experienceRequiseAns }} years</span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Deadline</span>
+                    <span class="detail-value">{{ jobPosition.deadline | date:'longDate' }}</span>
+                </div>
+
+                <!-- ✅ nombreCandidatures ajouté -->
+                <div class="detail-item">
+                    <span class="detail-label">Applications Received</span>
+                    <span class="detail-value candidatures-count">
+                        👥 {{ jobPosition.nombreCandidatures ?? 0 }}
+                    </span>
+                </div>
+
+                <div class="detail-item full-width">
+                    <span class="detail-label">Skills Required</span>
+                    <div class="skills-list">
+                        <span class="skill-tag" *ngFor="let skill of jobPosition.skillsRequis?.split(',')">
+                            {{ skill.trim() }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="detail-item full-width">
+                    <span class="detail-label">Description</span>
+                    <p class="detail-description">{{ jobPosition.description }}</p>
+                </div>
+
+            </div>
+        </app-recruitment-card>
+    </div>
+</div>

@@ -1,0 +1,89 @@
+/* ===== Form grid ===== */
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.full-width {
+    grid-column: 1 / -1;
+}
+
+
+/* ===== Label + AI ===== */
+
+.label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.label-row label {
+    font-weight: 600;
+}
+
+
+/* ===== Gemini Button ===== */
+
+.btn-ai {
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 600;
+
+    background: linear-gradient(135deg, #7c3aed, #2563eb);
+    color: white;
+
+    border: none;
+    border-radius: 8px;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+.btn-ai:hover {
+    transform: translateY(-1px);
+    opacity: 0.9;
+}
+
+.btn-ai:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+
+/* ===== AI Hint ===== */
+
+.ai-hint {
+    font-size: 12px;
+    color: #9ca3af;
+    font-style: italic;
+}
+
+
+/* ===== Inputs ===== */
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+
+/* ===== Readonly input ===== */
+
+.input-readonly {
+    opacity: 0.6;
+    background: #1e1e2f;
+}
+
+
+/* ===== Actions ===== */
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
