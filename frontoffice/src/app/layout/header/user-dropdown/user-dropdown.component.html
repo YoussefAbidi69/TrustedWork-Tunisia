@@ -1,0 +1,39 @@
+<div class="user-dropdown">
+  <button
+    class="user-dropdown__trigger"
+    type="button"
+    aria-haspopup="menu"
+    [attr.aria-expanded]="open"
+    (click)="toggleMenu()"
+  >
+    <span class="user-dropdown__avatar" aria-hidden="true">{{ initials }}</span>
+    <span class="user-dropdown__identity">
+      <span class="user-dropdown__label">Account</span>
+      <span class="user-dropdown__email">{{ email || 'User' }}</span>
+    </span>
+    <span class="user-dropdown__chevron" [class.user-dropdown__chevron--open]="open" aria-hidden="true">▾</span>
+  </button>
+
+  <div class="user-dropdown__menu" role="menu" [class.user-dropdown__menu--open]="open">
+    <a routerLink="/dashboard" role="menuitem" (click)="closeMenu()">Dashboard</a>
+    <a routerLink="/jobs" role="menuitem" (click)="closeMenu()">Jobs</a>
+    <a routerLink="/jobs/saved" role="menuitem" (click)="closeMenu()">Saved Jobs</a>
+    <a routerLink="/jobs/applications" role="menuitem" (click)="closeMenu()">My Applications</a>
+    <a routerLink="/profile" role="menuitem" (click)="closeMenu()">User Profile</a>
+    <a routerLink="/kyc" role="menuitem" (click)="closeMenu()">
+      KYC
+      <span class="user-dropdown__status" *ngIf="kycStatus">{{ kycStatus }}</span>
+    </a>
+    <a routerLink="/settings" role="menuitem" (click)="closeMenu()">Settings</a>
+    <button
+      type="button"
+      role="menuitem"
+      class="user-dropdown__theme"
+      (click)="theme.toggle(); closeMenu()"
+      [attr.aria-label]="theme.isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'"
+    >
+      {{ theme.isDarkMode ? 'Light mode' : 'Dark mode' }}
+    </button>
+    <button type="button" role="menuitem" class="user-dropdown__danger" (click)="onLogout()">Logout</button>
+  </div>
+</div>

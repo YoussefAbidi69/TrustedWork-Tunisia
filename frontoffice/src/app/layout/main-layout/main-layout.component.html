@@ -1,0 +1,13 @@
+<div class="layout-root" [class.layout-root--auth]="isAuthRoute">
+  <app-header *ngIf="!isAuthRoute" />
+  <div class="layout-root__body" [class.layout-root__body--auth]="isAuthRoute">
+    <main
+      class="layout-root__main"
+      [class.app-shell__content]="!isAuthRoute"
+      [class.layout-root__main--auth]="isAuthRoute"
+    >
+      <router-outlet />
+    </main>
+  </div>
+  <app-footer *ngIf="!isAuthRoute" />
+</div>

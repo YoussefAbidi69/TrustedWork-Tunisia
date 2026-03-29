@@ -1,0 +1,29 @@
+<header class="app-header" role="banner">
+  <div class="app-header__inner">
+    <a routerLink="/home" class="app-header__brand" aria-label="TrustedWork home">
+      <span class="app-header__brand-badge">TW</span>
+      <span class="app-header__brand-text">TrustedWork</span>
+    </a>
+
+    <nav class="app-header__nav" aria-label="Primary">
+      <a routerLink="/home" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
+      <a routerLink="/dashboard" routerLinkActive="is-active" *ngIf="auth.isLoggedIn()">Dashboard</a>
+      <a routerLink="/jobs" routerLinkActive="is-active" *ngIf="auth.isLoggedIn()">Jobs</a>
+    </nav>
+
+    <div class="app-header__actions">
+      <ng-container *ngIf="!auth.isLoggedIn()">
+        <a routerLink="/auth/login" class="ds-btn ds-btn-outline app-header__signin">Sign in</a>
+        <a routerLink="/auth/register" class="ds-btn ds-btn-primary app-header__register">Register</a>
+      </ng-container>
+
+      <ng-container *ngIf="auth.isLoggedIn()">
+        <app-user-dropdown
+          [email]="auth.getEmail()"
+          [kycStatus]="kycStatus"
+          (logoutClicked)="logout()"
+        ></app-user-dropdown>
+      </ng-container>
+    </div>
+  </div>
+</header>
