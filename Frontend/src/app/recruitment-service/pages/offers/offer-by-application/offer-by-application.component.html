@@ -1,0 +1,57 @@
+<div class="page animate-fade-in">
+    <app-recruitment-card title="Offre par Candidature" subtitle="Retrouver l'offre liée à une candidature" icon="🔗"
+        [padding]="false">
+
+        <div class="search-bar">
+            <input type="number" class="search-input" [(ngModel)]="applicationId" placeholder="Entrer Application ID..."
+                min="1" (keydown.enter)="search()" />
+            <app-button-primary icon="🔍" (onClick)="search()" [loading]="loading">
+                Rechercher
+            </app-button-primary>
+        </div>
+
+        <div class="empty-state" *ngIf="searched && !loading && !offer">
+            <span>Aucune offre trouvée pour la candidature #{{ applicationId }}</span>
+        </div>
+
+        <div class="result-card" *ngIf="offer && !loading">
+            <div class="result-banner">
+                <div class="result-icon">📄</div>
+                <div class="result-info">
+                    <h3 class="result-title">{{ offer.posteExact }}</h3>
+                    <p class="result-sub">Application #{{ offer.applicationId }} · Offre #{{ offer.id }}</p>
+                </div>
+                <div class="result-right">
+                    <app-status-badge [status]="offer.status || 'SENT'"></app-status-badge>
+                    <span class="salary-chip">💰 {{ offer.salairePropose | number:'1.0-0' }} TND</span>
+                </div>
+            </div>
+            <div class="result-details">
+                <div class="result-item">
+                    <span class="result-label">Période d'Essai</span>
+                    <span class="result-value">{{ offer.periodeEssaiMois }} mois</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Deadline Réponse</span>
+                    <span class="result-value">{{ offer.deadlineReponse | date:'shortDate' }}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Date de Début</span>
+                    <span class="result-value">{{ offer.dateDebutSouhaitee | date:'shortDate' }}</span>
+                </div>
+                <div class="result-item" *ngIf="offer.contreOffreFreelancer">
+                    <span class="result-label">Contre-Offre</span>
+                    <span class="result-value contre">💬 Soumise</span>
+                </div>
+            </div>
+            <div class="result-actions">
+                <button class="btn btn-outline" (click)="onView()">Voir le détail complet →</button>
+            </div>
+        </div>
+
+        <div class="empty-state" *ngIf="!searched">
+            <span>🔗 Entrez un Application ID pour trouver son offre</span>
+        </div>
+
+    </app-recruitment-card>
+</div>

@@ -1,0 +1,63 @@
+<div class="page animate-fade-in">
+    <app-recruitment-card [title]="title" subtitle="Offre formelle de recrutement" icon="📄">
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form-grid">
+            <div class="form-group">
+                <label>Candidat *</label>
+                <select id="applicationId" formControlName="applicationId">
+                    <option value="">Select candidate</option>
+
+                    <option *ngFor="let app of applications" [value]="app.id">
+                        {{ app.jobPositionTitre }} | Freelancer {{ app.freelancerId }} | Score {{ app.matchingScore }}
+                    </option>
+
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Poste Exact *</label>
+                <input formControlName="posteExact" placeholder="Ex: Développeur Full Stack Senior" />
+            </div>
+
+            <div class="form-group">
+                <label>Salaire Proposé (TND) *</label>
+                <input type="number" formControlName="salairePropose" placeholder="0" min="0" />
+            </div>
+
+            <div class="form-group">
+                <label>Période d'Essai (mois) *</label>
+                <input type="number" formControlName="periodeEssaiMois" placeholder="3" min="0" />
+            </div>
+
+            <div class="form-group">
+                <label>Date de Début Souhaitée *</label>
+                <input type="datetime-local" formControlName="dateDebutSouhaitee" />
+            </div>
+
+            <div class="form-group">
+                <label>Deadline de Réponse *</label>
+                <input type="datetime-local" formControlName="deadlineReponse" />
+            </div>
+
+            <div class="form-group" *ngIf="isEdit">
+                <label>Statut</label>
+                <select formControlName="status">
+                    <option *ngFor="let s of statusOptions" [value]="s">{{ s }}</option>
+                </select>
+            </div>
+
+            <div class="form-group full-width">
+                <label>Avantages <span class="optional">(optionnel)</span></label>
+                <textarea formControlName="avantages" rows="3"
+                    placeholder="Ex: Mutuelle, télétravail 2j/sem, tickets restaurant..."></textarea>
+            </div>
+
+            <div class="form-actions full-width">
+                <button type="button" class="btn btn-outline" routerLink="/recruitment/offers">Annuler</button>
+                <app-button-primary icon="📤" [loading]="loading" [disabled]="form.invalid">
+                    {{ submitLabel }}
+                </app-button-primary>
+            </div>
+
+        </form>
+    </app-recruitment-card>
+</div>

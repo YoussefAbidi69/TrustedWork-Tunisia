@@ -1,0 +1,97 @@
+<div class="page animate-fade-in">
+
+    <div class="loading-state" *ngIf="loading">
+        <div class="spinner"></div>
+        <span>Chargement...</span>
+    </div>
+
+    <div *ngIf="!loading && talent">
+
+        <div class="page-header">
+            <button class="btn btn-outline btn-sm" (click)="goBack()">← Retour</button>
+            <div class="header-actions">
+                <button class="btn btn-outline btn-sm" (click)="onEdit()">✏️ Modifier</button>
+                <button class="btn btn-danger btn-sm" (click)="onDelete()">🗑 Retirer du Vivier</button>
+            </div>
+        </div>
+
+        <!-- Talent banner -->
+        <div class="talent-banner" [style.border-color]="getTagColor(talent.tag)">
+            <div class="talent-icon-wrap" [style.background]="getTagColor(talent.tag) + '20'"
+                [style.border-color]="getTagColor(talent.tag) + '40'">
+                <span class="talent-icon">{{ getTagIcon(talent.tag) }}</span>
+            </div>
+            <div class="talent-info">
+                <h2 class="talent-title">Freelancer #{{ talent.freelancerId }}</h2>
+                <p class="talent-sub">Entreprise #{{ talent.entrepriseId }} · Ajouté le {{ talent.dateAjout |
+                    date:'shortDate' }}</p>
+            </div>
+            <div class="banner-right">
+                <span class="tag-badge" [style.background]="getTagColor(talent.tag) + '20'"
+                    [style.border-color]="getTagColor(talent.tag) + '40'" [style.color]="getTagColor(talent.tag)">
+                    {{ getTagIcon(talent.tag) }} {{ talent.tag }}
+                </span>
+                <span class="alerte-chip" *ngIf="talent.alerteDisponibilite">
+                    🔔 Alerte active
+                </span>
+                <span class="alerte-chip off" *ngIf="!talent.alerteDisponibilite">
+                    🔕 Alerte inactive
+                </span>
+            </div>
+        </div>
+
+        <app-recruitment-card title="Détails du Talent" icon="🌟">
+            <div class="detail-grid">
+
+                <div class="detail-item">
+                    <span class="detail-label">Tag</span>
+                    <span class="detail-value">
+                        {{ getTagIcon(talent.tag) }} {{ talent.tag }}
+                    </span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Source d'Origine</span>
+                    <span class="detail-value">
+                        {{ getSourceIcon(talent.sourceOrigine) }} {{ talent.sourceOrigine }}
+                    </span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Alerte Disponibilité</span>
+                    <span class="detail-value" [class.text-primary]="talent.alerteDisponibilite">
+                        {{ talent.alerteDisponibilite ? '🔔 Activée' : '🔕 Désactivée' }}
+                    </span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Date d'Ajout</span>
+                    <span class="detail-value">{{ talent.dateAjout | date:'longDate' }}</span>
+                </div>
+
+                <div class="detail-item full-width" *ngIf="talent.notesPrivees">
+                    <span class="detail-label">Notes Privées 🔒</span>
+                    <div class="notes-box">
+                        <p class="notes-text">{{ talent.notesPrivees }}</p>
+                    </div>
+                </div>
+
+                <div class="detail-item full-width" *ngIf="!talent.notesPrivees">
+                    <span class="detail-label">Notes Privées 🔒</span>
+                    <div class="notes-empty">
+                        <span>Aucune note — modifier pour en ajouter</span>
+                        <button class="btn-add-feedback" (click)="onEdit()">✏️ Ajouter Note</button>
+                    </div>
+                </div>
+
+            </div>
+        </app-recruitment-card>
+
+    </div>
+
+    <div *ngIf="!loading && !talent" class="not-found">
+        <span>Talent introuvable.</span>
+        <button class="btn btn-outline" (click)="goBack()">Retour</button>
+    </div>
+
+</div>

@@ -1,0 +1,60 @@
+<div class="page animate-fade-in">
+    <app-recruitment-card title="Contrat par Offre" subtitle="Retrouver le contrat lié à une offre" icon="🔗"
+        [padding]="false">
+
+        <div class="search-bar">
+            <input type="number" class="search-input" [(ngModel)]="offerId" placeholder="Entrer Offer ID..." min="1"
+                (keydown.enter)="search()" />
+            <app-button-primary icon="🔍" (onClick)="search()" [loading]="loading">
+                Rechercher
+            </app-button-primary>
+        </div>
+
+        <div class="empty-state" *ngIf="searched && !loading && !contract">
+            <span>Aucun contrat trouvé pour l'offre #{{ offerId }}</span>
+        </div>
+
+        <div class="result-card" *ngIf="contract && !loading">
+            <div class="result-banner" [class.signed]="contract.status === 'SIGNED' || contract.status === 'ACTIVE'">
+                <div class="result-icon">📑</div>
+                <div class="result-info">
+                    <h3 class="result-title">Contrat {{ contract.typeContrat }}</h3>
+                    <p class="result-sub">
+                        Freelancer #{{ contract.freelancerId }} · Entreprise #{{ contract.entrepriseId }} · Offre #{{
+                        contract.offerId }}
+                    </p>
+                </div>
+                <div class="result-right">
+                    <app-status-badge [status]="contract.status || 'DRAFT'"></app-status-badge>
+                    <span class="salary-chip">💰 {{ contract.salaireFinal | number:'1.0-0' }} TND</span>
+                </div>
+            </div>
+            <div class="result-details">
+                <div class="result-item">
+                    <span class="result-label">Type</span>
+                    <span class="result-value">{{ contract.typeContrat }}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Période d'Essai</span>
+                    <span class="result-value">{{ contract.periodeEssai }} mois</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Date de Début</span>
+                    <span class="result-value">{{ contract.dateDebutEffective | date:'shortDate' }}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Commission</span>
+                    <span class="result-value">{{ contract.commissionPlateforme }}%</span>
+                </div>
+            </div>
+            <div class="result-actions">
+                <button class="btn btn-outline" (click)="onView()">Voir le détail complet →</button>
+            </div>
+        </div>
+
+        <div class="empty-state" *ngIf="!searched">
+            <span>🔗 Entrez un Offer ID pour trouver son contrat</span>
+        </div>
+
+    </app-recruitment-card>
+</div>

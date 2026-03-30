@@ -29,4 +29,7 @@ public interface IRecruitmentOfferRepository
     @Transactional
     @Query("UPDATE RecruitmentOffer o SET o.contreOffreFreelancer = :contreOffre, o.status = 'NEGOTIATING' WHERE o.id = :id")
     void addContreOffre(@Param("id") Long id, @Param("contreOffre") String contreOffre);
+
+
+
 }

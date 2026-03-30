@@ -34,6 +34,21 @@ import { ApplicationByJobComponent } from './pages/applications/application-by-j
 import { InterviewListComponent } from './pages/interviews/interview-list/interview-list.component';
 import { InterviewCreateComponent } from './pages/interviews/interview-create/interview-create.component';
 import { InterviewDetailComponent } from './pages/interviews/interview-detail/interview-detail.component';
+import { OfferListComponent } from './pages/offers/offer-list/offer-list.component';
+import { OfferCreateComponent } from './pages/offers/offer-create/offer-create.component';
+import { OfferDetailComponent } from './pages/offers/offer-detail/offer-detail.component';
+import { OfferByApplicationComponent } from './pages/offers/offer-by-application/offer-by-application.component';
+import { OfferByEntrepriseComponent } from './pages/offers/offer-by-entreprise/offer-by-entreprise.component';
+
+import { ContractListComponent } from './pages/contracts/contract-list/contract-list.component';
+import { ContractCreateComponent } from './pages/contracts/contract-create/contract-create.component';
+import { ContractDetailComponent } from './pages/contracts/contract-detail/contract-detail.component';
+import { ContractByOfferComponent } from './pages/contracts/contract-by-offer/contract-by-offer.component';
+import { ContractByFreelancerComponent } from './pages/contracts/contract-by-freelancer/contract-by-freelancer.component';
+import { ContractByEntrepriseComponent } from './pages/contracts/contract-by-entreprise/contract-by-entreprise.component';
+import { TalentPoolListComponent } from './pages/talent-pool/talent-pool-list/talent-pool-list.component';
+import { TalentPoolCreateComponent } from './pages/talent-pool/talent-pool-create/talent-pool-create.component';
+import { TalentPoolDetailComponent } from './pages/talent-pool/talent-pool-detail/talent-pool-detail.component';
 
 
 @NgModule({
@@ -72,6 +87,23 @@ import { InterviewDetailComponent } from './pages/interviews/interview-detail/in
         InterviewListComponent,
         InterviewCreateComponent,
         InterviewDetailComponent,
+        OfferListComponent,
+        OfferCreateComponent,
+        OfferDetailComponent,
+        OfferByApplicationComponent,
+        OfferByEntrepriseComponent,
+        ContractListComponent,
+        ContractCreateComponent,
+        ContractDetailComponent,
+        ContractByOfferComponent,
+        ContractByFreelancerComponent,
+        ContractByEntrepriseComponent,
+
+
+        // Talent Pool
+        TalentPoolListComponent,
+        TalentPoolCreateComponent,
+        TalentPoolDetailComponent,
 
 
     ],

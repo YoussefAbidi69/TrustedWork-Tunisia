@@ -76,4 +76,9 @@ public class RecruitmentOfferRestController {
                                                            @RequestParam String contreOffre) {
         return ResponseEntity.ok(offerService.addContreOffre(id, contreOffre));
     }
+
+    @GetMapping("/status/{status}")
+    public ResponseEntity<List<RecruitmentOfferDTO>> getByStatus(@PathVariable OfferStatus status) {
+        return ResponseEntity.ok(offerService.getByStatus(status));
+    }
 }

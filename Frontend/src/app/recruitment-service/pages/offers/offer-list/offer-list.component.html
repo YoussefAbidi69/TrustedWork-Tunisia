@@ -1,0 +1,21 @@
+<div class="page animate-fade-in">
+    <app-recruitment-card title="Offres Formelles" subtitle="Gestion des offres d'emploi envoyées" icon="📄"
+        [padding]="false">
+
+        <div card-actions>
+            <app-button-primary icon="➕" (onClick)="onCreate()">Nouvelle Offre</app-button-primary>
+        </div>
+
+        <div class="filters-bar">
+            <select class="filter-select" (change)="onFilterStatus($any($event.target).value)">
+                <option *ngFor="let s of statusOptions" [value]="s">{{ s || 'Tous les statuts' }}</option>
+            </select>
+            <span class="results-count">{{ filtered.length }} résultat(s)</span>
+        </div>
+
+        <app-recruitment-table [columns]="columns" [data]="filtered" [loading]="loading" (onView)="onView($event)"
+            (onEdit)="onEdit($event)" (onDelete)="onDelete($event)">
+        </app-recruitment-table>
+
+    </app-recruitment-card>
+</div>

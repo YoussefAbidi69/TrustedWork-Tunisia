@@ -1,0 +1,25 @@
+<div class="page animate-fade-in">
+    <app-recruitment-card title="Contrats d'un Freelancer" subtitle="Tous les contrats signés par un freelancer"
+        icon="👤" [padding]="false">
+
+        <div class="search-bar">
+            <input type="number" class="search-input" [(ngModel)]="freelancerId" placeholder="Entrer Freelancer ID..."
+                min="1" (keydown.enter)="search()" />
+            <app-button-primary icon="🔍" (onClick)="search()" [loading]="loading">
+                Rechercher
+            </app-button-primary>
+        </div>
+
+        <div class="empty-state" *ngIf="searched && !loading && contracts.length === 0">
+            <span>Aucun contrat pour le freelancer #{{ freelancerId }}</span>
+        </div>
+        <div class="empty-state" *ngIf="!searched">
+            <span>👤 Entrez un Freelancer ID pour voir ses contrats</span>
+        </div>
+
+        <app-recruitment-table *ngIf="contracts.length > 0" [columns]="columns" [data]="contracts" [loading]="loading"
+            (onView)="onView($event)">
+        </app-recruitment-table>
+
+    </app-recruitment-card>
+</div>

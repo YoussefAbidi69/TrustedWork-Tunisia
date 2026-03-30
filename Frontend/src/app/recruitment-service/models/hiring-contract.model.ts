@@ -1,14 +1,18 @@
+export type TypeContrat = 'CDI' | 'CDD' | 'CIVP' | 'STAGE' | 'ALTERNANCE';
+export type ContractStatus = 'DRAFT' | 'SIGNED' | 'ACTIVE' | 'TERMINATED';
+
 export interface HiringContract {
     id?: number;
     offerId: number;
     freelancerId: number;
     entrepriseId: number;
-    typeContrat: string;
+    typeContrat: TypeContrat;
     salaireFinal: number;
     dateDebutEffective: string;
-    periodeEssai: boolean;
+    periodeEssai: number;
     commissionPlateforme: number;
-    status: string;
-    dateCreation?: string;
-    dateMiseAJour?: string;
+    feedbackPostEmbauche3Mois?: string;
+    status?: ContractStatus;
+    dateContratSigne?: string;
+    updatedAt?: string;
 }

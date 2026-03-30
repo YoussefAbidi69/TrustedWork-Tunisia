@@ -1,0 +1,110 @@
+<div class="page animate-fade-in">
+
+    <div class="loading-state" *ngIf="loading">
+        <div class="spinner"></div><span>Chargement...</span>
+    </div>
+
+    <div *ngIf="!loading && offer">
+
+        <div class="page-header">
+            <button class="btn btn-outline btn-sm" (click)="goBack()">← Retour</button>
+            <div class="header-actions">
+                <div class="status-dropdown-wrap">
+                    <button class="btn btn-outline btn-sm" (click)="toggleStatusMenu()">🔄 Statut</button>
+                    <div class="status-menu" *ngIf="showStatusMenu">
+                        <button *ngFor="let s of statusOptions" class="status-option"
+                            [class.active]="s === offer.status" (click)="changeStatus(s)">{{ s }}</button>
+                    </div>
+                </div>
+                <button class="btn btn-outline btn-sm" (click)="showContreOffreModal = true">💬 Contre-Offre</button>
+                <button class="btn btn-outline btn-sm" (click)="onEdit()">✏️ Modifier</button>
+                <button class="btn btn-danger btn-sm" (click)="onDelete()">🗑 Supprimer</button>
+            </div>
+        </div>
+
+        <!-- Offer banner -->
+        <div class="offer-banner">
+            <div class="offer-icon-wrap"><span class="offer-icon">📄</span></div>
+            <div class="offer-info">
+                <h2 class="offer-title">{{ offer.posteExact }}</h2>
+                <p class="offer-sub">Application #{{ offer.applicationId }} · Envoyée le {{ offer.dateEnvoi |
+                    date:'shortDate' }}</p>
+            </div>
+            <div class="banner-right">
+                <app-status-badge [status]="offer.status || 'SENT'"></app-status-badge>
+                <span class="salary-chip">💰 {{ offer.salairePropose | number:'1.0-0' }} TND</span>
+            </div>
+        </div>
+
+        <app-recruitment-card title="Détails de l'Offre" icon="📄">
+            <div class="detail-grid">
+
+                <div class="detail-item">
+                    <span class="detail-label">Salaire Proposé</span>
+                    <span class="detail-value text-primary">{{ offer.salairePropose | number:'1.0-0' }} TND</span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Période d'Essai</span>
+                    <span class="detail-value">{{ offer.periodeEssaiMois }} mois</span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Date de Début Souhaitée</span>
+                    <span class="detail-value">{{ offer.dateDebutSouhaitee | date:'longDate' }}</span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Deadline de Réponse</span>
+                    <span class="detail-value">{{ offer.deadlineReponse | date:'longDate' }}</span>
+                </div>
+
+                <div class="detail-item full-width" *ngIf="offer.avantages">
+                    <span class="detail-label">Avantages</span>
+                    <p class="detail-description">{{ offer.avantages }}</p>
+                </div>
+
+                <!-- Contre-offre freelancer -->
+                <div class="detail-item full-width" *ngIf="offer.contreOffreFreelancer">
+                    <span class="detail-label">Contre-Offre du Freelancer</span>
+                    <div class="contre-offre-box">
+                        <span class="contre-offre-icon">💬</span>
+                        <p class="contre-offre-text">{{ offer.contreOffreFreelancer }}</p>
+                    </div>
+                </div>
+
+                <div class="detail-item full-width" *ngIf="!offer.contreOffreFreelancer">
+                    <span class="detail-label">Contre-Offre du Freelancer</span>
+                    <div class="feedback-placeholder">
+                        <span>Aucune contre-offre soumise</span>
+                        <button class="btn-add-feedback" (click)="showContreOffreModal = true">+ Soumettre
+                            Contre-Offre</button>
+                    </div>
+                </div>
+
+            </div>
+        </app-recruitment-card>
+
+    </div>
+
+    <!-- Modal contre-offre -->
+    <div class="modal-overlay" *ngIf="showContreOffreModal" (click)="showContreOffreModal = false">
+        <div class="modal" (click)="$event.stopPropagation()">
+            <h3 class="modal-title">💬 Contre-Offre Freelancer</h3>
+            <p class="modal-subtitle">PATCH /offers/{{ offer?.id }}/contre-offre</p>
+            <textarea class="modal-textarea" [(ngModel)]="contreOffreText" rows="4"
+                placeholder="Ex: Je suis intéressé mais je souhaite un salaire de 3200 TND..."></textarea>
+            <div class="modal-actions">
+                <button class="btn btn-outline" (click)="showContreOffreModal = false">Annuler</button>
+                <app-button-primary icon="📤" [disabled]="!contreOffreText.trim()" (onClick)="submitContreOffre()">
+                    Soumettre
+                </app-button-primary>
+            </div>
+        </div>
+    </div>
+
+    <div *ngIf="!loading && !offer" class="not-found">
+        <span>Offre introuvable.</span>
+        <button class="btn btn-outline" (click)="goBack()">Retour</button>
+    </div>
+</div>

@@ -1,0 +1,69 @@
+<div class="page animate-fade-in">
+    <app-recruitment-card [title]="title" subtitle="Gestion du vivier de talents" icon="🌟">
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form-grid">
+
+            <div class="form-group">
+                <label>Freelancer ID *</label>
+                <input type="number" formControlName="freelancerId" placeholder="ID du freelancer" min="1" />
+                <span class="field-error"
+                    *ngIf="form.get('freelancerId')?.invalid && form.get('freelancerId')?.touched">
+                    Champ requis
+                </span>
+            </div>
+
+            <div class="form-group">
+                <label>Entreprise ID *</label>
+                <input type="number" formControlName="entrepriseId" placeholder="ID de l'entreprise" min="1" />
+                <span class="field-error"
+                    *ngIf="form.get('entrepriseId')?.invalid && form.get('entrepriseId')?.touched">
+                    Champ requis
+                </span>
+            </div>
+
+            <div class="form-group">
+                <label>Tag *</label>
+                <div class="tag-selector">
+                    <label *ngFor="let t of tagOptions" class="tag-option"
+                        [class.selected]="form.get('tag')?.value === t">
+                        <input type="radio" formControlName="tag" [value]="t" hidden />
+                        <span class="tag-icon">
+                            {{ t === 'WATCHLIST' ? '👀' : t === 'FAVORITE' ? '⭐' : '📨' }}
+                        </span>
+                        {{ t }}
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Source d'Origine *</label>
+                <select formControlName="sourceOrigine">
+                    <option *ngFor="let s of sourceOptions" [value]="s">{{ s }}</option>
+                </select>
+            </div>
+
+            <div class="form-group full-width">
+                <label>Notes Privées <span class="optional">(optionnel)</span></label>
+                <textarea formControlName="notesPrivees" rows="3"
+                    placeholder="Notes internes sur ce freelancer..."></textarea>
+            </div>
+
+            <div class="form-group full-width alerte-row">
+                <label class="toggle-label">
+                    <input type="checkbox" formControlName="alerteDisponibilite" />
+                    <span class="toggle-text">
+                        🔔 Activer l'alerte de disponibilité
+                    </span>
+                    <span class="toggle-hint">Notifie l'entreprise quand ce freelancer se libère</span>
+                </label>
+            </div>
+
+            <div class="form-actions full-width">
+                <button type="button" class="btn btn-outline" routerLink="/recruitment/talent-pool">Annuler</button>
+                <app-button-primary icon="🌟" [loading]="loading" [disabled]="form.invalid">
+                    {{ submitLabel }}
+                </app-button-primary>
+            </div>
+
+        </form>
+    </app-recruitment-card>
+</div>

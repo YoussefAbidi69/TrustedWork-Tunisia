@@ -1,0 +1,60 @@
+<div class="page animate-fade-in">
+    <app-recruitment-card title="Talent Pool" subtitle="Vivier de talents de l'entreprise" icon="🌟" [padding]="false">
+
+        <div card-actions>
+            <app-button-primary icon="➕" (onClick)="onCreate()">Ajouter Talent</app-button-primary>
+        </div>
+
+        <!-- Search bar -->
+        <div class="search-bar">
+            <input type="number" class="search-input" [(ngModel)]="entrepriseId" placeholder="Entrer Entreprise ID..."
+                min="1" (keydown.enter)="search()" />
+            <div class="tag-filters">
+                <button *ngFor="let t of tagOptions" class="tag-btn" [class.active]="selectedTag === t.value"
+                    (click)="onFilterTag(t.value)">
+                    <span *ngIf="t.icon">{{ t.icon }}</span> {{ t.label }}
+                </button>
+            </div>
+            <app-button-primary icon="🔍" (onClick)="search()" [loading]="loading">
+                Rechercher
+            </app-button-primary>
+        </div>
+
+        <!-- Stats si résultats -->
+        <div class="stats-bar" *ngIf="talents.length > 0">
+            <div class="stat-chip">
+                <span class="stat-icon">👥</span>
+                <span class="stat-val">{{ talents.length }}</span>
+                <span class="stat-label">Total</span>
+            </div>
+            <div class="stat-chip">
+                <span class="stat-icon">⭐</span>
+                <span class="stat-val">{{ countByTag('FAVORITE') }}</span>
+                <span class="stat-label">Favoris</span>
+            </div>
+            <div class="stat-chip">
+                <span class="stat-icon">👀</span>
+                <span class="stat-val">{{ countByTag('WATCHLIST') }}</span>
+                <span class="stat-label">Watchlist</span>
+            </div>
+            <div class="stat-chip">
+                <span class="stat-icon">📨</span>
+                <span class="stat-val">{{ countByTag('CONTACTED') }}</span>
+                <span class="stat-label">Contactés</span>
+            </div>
+        </div>
+
+        <div class="empty-state" *ngIf="!loading && searched && talents.length === 0">
+            <span>Aucun talent dans le vivier pour l'entreprise #{{ entrepriseId }}</span>
+        </div>
+
+        <div class="empty-state" *ngIf="!searched">
+            <span>🔍 Entrez un Entreprise ID pour afficher le vivier</span>
+        </div>
+
+        <app-recruitment-table *ngIf="filtered.length > 0" [columns]="columns" [data]="filtered" [loading]="loading"
+            (onView)="onView($event)" (onEdit)="onEdit($event)" (onDelete)="onDelete($event)">
+        </app-recruitment-table>
+
+    </app-recruitment-card>
+</div>

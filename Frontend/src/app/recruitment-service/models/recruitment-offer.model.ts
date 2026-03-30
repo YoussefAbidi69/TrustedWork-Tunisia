@@ -1,3 +1,5 @@
+export type OfferStatus = 'SENT' | 'ACCEPTED' | 'DECLINED' | 'NEGOTIATING';
+
 export interface RecruitmentOffer {
     id?: number;
     applicationId: number;
@@ -5,9 +7,9 @@ export interface RecruitmentOffer {
     posteExact: string;
     dateDebutSouhaitee: string;
     periodeEssaiMois: number;
-    avantages: string;
+    avantages?: string;
     deadlineReponse: string;
-    status: string;
-    dateCreation?: string;
-    dateMiseAJour?: string;
+    contreOffreFreelancer?: string;
+    status?: OfferStatus;
+    dateEnvoi?: string;
 }

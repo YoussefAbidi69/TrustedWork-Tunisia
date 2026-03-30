@@ -94,4 +94,16 @@ public class RecruitmentOfferServiceImpl implements IRecruitmentOfferService {
         offerRepository.addContreOffre(id, contreOffre);
         return getById(id);
     }
+
+    @Override
+    public List<RecruitmentOfferDTO> getByStatus(OfferStatus status) {
+        return offerRepository.findByStatus(status)
+                .stream()
+                .map(mapper::toDTO)
+                .toList();
+    }
+
+
+
+
 }

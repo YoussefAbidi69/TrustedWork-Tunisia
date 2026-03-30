@@ -1,0 +1,66 @@
+<div class="page animate-fade-in">
+    <app-recruitment-card [title]="title" subtitle="Contrat d'embauche final" icon="📑">
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form-grid">
+
+            <div class="form-group">
+                <label>Offre ID *</label>
+                <select id="offerId" formControlName="offerId">
+
+                    <option value="">Select accepted offer</option>
+
+                    <option *ngFor="let offer of offers" [value]="offer.id">
+                        {{ offer.posteExact }} | {{ offer.salairePropose }} TND | {{ offer.status }}
+                    </option>
+
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Type de Contrat *</label>
+                <select formControlName="typeContrat">
+                    <option *ngFor="let t of typeOptions" [value]="t">{{ t }}</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Salaire Final (TND) *</label>
+                <input type="number" formControlName="salaireFinal" placeholder="0" min="0" />
+            </div>
+
+            <div class="form-group">
+                <label>Période d'Essai (mois) *</label>
+                <input type="number" formControlName="periodeEssai" placeholder="3" min="0" />
+            </div>
+
+            <div class="form-group">
+                <label>Date de Début *</label>
+                <input type="datetime-local" formControlName="dateDebutEffective" />
+            </div>
+
+            <div class="form-group">
+                <label>Commission Plateforme (%) *</label>
+                <input type="number" formControlName="commissionPlateforme" placeholder="10" min="0" max="100" />
+            </div>
+
+            <div class="form-group" *ngIf="isEdit">
+                <label>Statut</label>
+                <select formControlName="status">
+                    <option *ngFor="let s of statusOptions" [value]="s">{{ s }}</option>
+                </select>
+            </div>
+
+            <div class="phase-info full-width">
+                <span class="info-badge">ℹ️ Phase 1</span>
+                <span class="info-text">freelancerId=1 · entrepriseId=2 définis automatiquement</span>
+            </div>
+
+            <div class="form-actions full-width">
+                <button type="button" class="btn btn-outline" routerLink="/recruitment/contracts">Annuler</button>
+                <app-button-primary icon="📝" [loading]="loading" [disabled]="form.invalid">
+                    {{ submitLabel }}
+                </app-button-primary>
+            </div>
+
+        </form>
+    </app-recruitment-card>
+</div>

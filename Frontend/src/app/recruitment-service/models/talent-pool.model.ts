@@ -1,11 +1,13 @@
+export type TalentTag = 'WATCHLIST' | 'FAVORITE' | 'CONTACTED';
+export type SourceOrigine = 'SEARCH' | 'HACKATHON' | 'RECOMMENDATION';
+
 export interface TalentPool {
     id?: number;
-    freelancerId: number;
     entrepriseId: number;
-    tag: string;
-    sourceOrigine: string;
+    freelancerId: number;
+    tag: TalentTag;
+    sourceOrigine: SourceOrigine;
     alerteDisponibilite: boolean;
-    notesPrivees: string;
+    notesPrivees?: string;
     dateAjout?: string;
-    dateMiseAJour?: string;
 }

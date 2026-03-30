@@ -1,0 +1,33 @@
+<div class="page animate-fade-in">
+    <app-recruitment-card title="Offres par Entreprise" subtitle="Toutes les offres envoyées par une entreprise"
+        icon="🏢" [padding]="false">
+
+        <div class="search-bar">
+            <input type="number" class="search-input" [(ngModel)]="entrepriseId" placeholder="Entrer Entreprise ID..."
+                min="1" (keydown.enter)="search()" />
+            <select class="filter-select" *ngIf="offers.length > 0"
+                (change)="onFilterStatus($any($event.target).value)">
+                <option *ngFor="let s of statusOptions" [value]="s">{{ s || 'Tous les statuts' }}</option>
+            </select>
+            <app-button-primary icon="🔍" (onClick)="search()" [loading]="loading">
+                Rechercher
+            </app-button-primary>
+        </div>
+
+        <div class="results-info" *ngIf="offers.length > 0">
+            <span>{{ filtered.length }} / {{ offers.length }} offre(s)</span>
+        </div>
+
+        <div class="empty-state" *ngIf="searched && !loading && offers.length === 0">
+            <span>Aucune offre pour l'entreprise #{{ entrepriseId }}</span>
+        </div>
+        <div class="empty-state" *ngIf="!searched">
+            <span>🏢 Entrez un Entreprise ID pour voir ses offres</span>
+        </div>
+
+        <app-recruitment-table *ngIf="filtered.length > 0" [columns]="columns" [data]="filtered" [loading]="loading"
+            (onView)="onView($event)">
+        </app-recruitment-table>
+
+    </app-recruitment-card>
+</div>

@@ -14,4 +14,7 @@ public interface IRecruitmentOfferService {
     List<RecruitmentOfferDTO> getByEntreprise(Long entrepriseId);
     RecruitmentOfferDTO updateStatus(Long id, OfferStatus status);
     RecruitmentOfferDTO addContreOffre(Long id, String contreOffre);
+
+    List<RecruitmentOfferDTO> getByStatus(OfferStatus status);
+
 }
