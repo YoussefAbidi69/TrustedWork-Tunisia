@@ -9,6 +9,16 @@ public interface IPaymentService {
 
     void confirmPayment(String paymentIntentId, Long contractId) throws Exception;
 
+    /**
+     * Releases the payment for a milestone that has been validated (APPROVED/AUTO_APPROVED).
+     * Amount is derived from the milestone itself (no caller-provided amount).
+     */
+    void releaseApprovedMilestone(Long milestoneId) throws Exception;
+
+    /**
+     * Legacy/manual release API. Amount is validated against the milestone amount.
+     * Prefer {@link #releaseApprovedMilestone(Long)} which is amount-safe.
+     */
     void releasePaymentToFreelancer(Long contractId, Long milestoneId, BigDecimal amount) throws Exception;
 
     String getPaymentStatus(String paymentIntentId) throws Exception;

@@ -1,107 +1,171 @@
-<div class="container mt-4">
-  <div class="row">
-    <div class="col-12">
-      <div class="card shadow">
-        <div class="card-header bg-primary text-white">
-          <h4 class="mb-0">Mon Portefeuille</h4>
+<div class="container py-4 animate-fade-in">
+
+  <!-- Wallet Hero Section -->
+  <div class="wallet-header d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+    <div>
+      <span class="balance-title">Solde de votre Portefeuille</span>
+      <h1 class="balance-amount animate-float-slow">
+        {{ wallet?.balance | number:'1.2-2' }} <span style="font-size: 2rem; opacity: 0.8;">DT</span>
+      </h1>
+      <p class="mb-0 opacity-75">
+        <i class="bi bi-shield-lock-fill me-2"></i> Mise à jour instantanée après chaque transaction validée
+      </p>
+    </div>
+    <div class="mt-4 mt-md-0 d-flex flex-column gap-3 align-items-md-end">
+       <button *ngIf="authService.getRole() === 'CLIENT'" 
+              class="btn btn-topup animate-pulse" 
+              (click)="addTestFunds()">
+        <i class="bi bi-lightning-fill me-2 text-warning"></i> Alimenter (Mode DEV)
+      </button>
+      <button class="btn btn-outline-light btn-sm rounded-pill px-3" (click)="refresh()">
+        <i class="bi bi-arrow-clockwise me-1"></i> Actualiser
+      </button>
+      <div class="d-flex align-items-center bg-white bg-opacity-10 px-3 py-2 rounded-4" style="backdrop-filter: blur(5px);">
+        <div class="me-3 text-end">
+          <div class="small fw-bold opacity-70 mb-0">PROPRIÉTAIRE</div>
+          <div class="fw-bold fs-6">ID #{{ userId }}</div>
         </div>
-        <div class="card-body">
-          
-          <div *ngIf="loading" class="text-center py-5">
-            <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Chargement...</span>
-            </div>
-          </div>
-
-          <div *ngIf="!loading && wallet">
-            <div class="text-center mb-4">
-              <small class="text-muted">Solde disponible</small>
-              <div class="balance">{{ wallet.balance | number:'1.2-2' }} €</div>
-            </div>
-
-            <div class="row mb-4">
-              <div class="col-md-4">
-                <div class="stats-card">
-                  <div class="number">{{ wallet.totalEarned | number:'1.2-2' }} €</div>
-                  <small class="text-muted">Total gagné</small>
-                </div>
-              </div>
-              <div class="col-md-4">
-                <div class="stats-card">
-                  <div class="number">{{ wallet.totalSpent | number:'1.2-2' }} €</div>
-                  <small class="text-muted">Total dépensé</small>
-                </div>
-              </div>
-              <div class="col-md-4">
-                <div class="stats-card">
-                  <div class="number">{{ wallet.totalCommissionPaid | number:'1.2-2' }} €</div>
-                  <small class="text-muted">Commission payée</small>
-                </div>
-              </div>
-            </div>
-
-            <hr>
-
-            <div class="mt-4">
-              <h5>Stripe Connect</h5>
-              <div class="d-flex justify-content-between align-items-center">
-                <div>
-                  <span class="status-badge" [class]="getStatusClass(stripeStatus)">
-                    {{ stripeStatus }}
-                  </span>
-                  <p class="text-muted small mt-2 mb-0">{{ stripeStatusMessage }}</p>
-                </div>
-                <button 
-                  *ngIf="stripeStatus !== 'ACTIVE'"
-                  class="btn btn-primary" 
-                  (click)="setupStripe()">
-                  Configurer Stripe
-                </button>
-              </div>
-            </div>
-
-            <hr>
-
-            <div class="mt-4">
-              <h5>Dernières transactions</h5>
-              <div class="table-responsive">
-                <table class="table table-hover">
-                  <thead>
-                    <tr>
-                      <th>Date</th>
-                      <th>Référence</th>
-                      <th>Description</th>
-                      <th>Montant</th>
-                      <th>Statut</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let transaction of transactions">
-                      <td>{{ transaction.createdAt | date:'dd/MM/yyyy' }}</td>
-                      <td><code>{{ transaction.reference }}</code></td>
-                      <td>{{ transaction.description }}</td>
-                      <td [class.text-success]="transaction.type === 'CREDIT'" 
-                          [class.text-danger]="transaction.type === 'DEBIT'">
-                        {{ transaction.type === 'CREDIT' ? '+' : '-' }} {{ transaction.montant }} €
-                      </td>
-                      <td>
-                        <span class="badge" [class.bg-success]="transaction.status === 'PROCESSED'">
-                          Réussie
-                        </span>
-                      </td>
-                    </tr>
-                    <tr *ngIf="transactions.length === 0">
-                      <td colspan="5" class="text-center text-muted py-4">
-                        Aucune transaction
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
+        <div class="bg-white rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+           <i class="bi bi-person-circle fs-4 text-primary"></i>
         </div>
       </div>
     </div>
   </div>
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+      <span class="visually-hidden">Chargement...</span>
+    </div>
+    <p class="mt-3 text-muted fw-bold">Synchronisation de vos actifs...</p>
+  </div>
+
+  <!-- Error state -->
+  <div *ngIf="!loading && walletError" class="alert alert-danger d-flex align-items-center gap-3 rounded-4 shadow-sm my-4">
+    <i class="bi bi-exclamation-triangle-fill fs-4"></i>
+    <div>
+      <strong>Portefeuille inaccessible</strong><br>
+      <span>{{ walletError }}</span>
+    </div>
+    <button class="btn btn-outline-danger btn-sm ms-auto rounded-pill" (click)="refresh()">
+      <i class="bi bi-arrow-clockwise me-1"></i> Réessayer
+    </button>
+  </div>
+
+  <div *ngIf="!loading && wallet">
+    
+    <!-- Stats Row -->
+    <div class="stats-grid">
+      <div class="stat-card-premium animate-fade-in-up" style="animation-delay: 0.1s;">
+        <div class="stat-icon icon-earned">
+          <i class="bi bi-graph-up-arrow"></i>
+        </div>
+        <span class="stat-label">Total Gagné</span>
+        <div class="stat-value text-success">+{{ wallet.totalEarned | number:'1.0-2' }} DT</div>
+        <div class="small text-muted mt-1 fw-bold">De vos missions réalisées</div>
+      </div>
+      
+      <div class="stat-card-premium animate-fade-in-up" style="animation-delay: 0.2s;">
+        <div class="stat-icon icon-spent">
+          <i class="bi bi-cart-check-fill"></i>
+        </div>
+        <span class="stat-label">Total Dépensé</span>
+        <div class="stat-value text-danger">-{{ wallet.totalSpent | number:'1.0-2' }} DT</div>
+        <div class="small text-muted mt-1 fw-bold">Sur vos projets</div>
+      </div>
+      
+      <div class="stat-card-premium animate-fade-in-up" style="animation-delay: 0.3s;">
+        <div class="stat-icon icon-commission">
+          <i class="bi bi-percent"></i>
+        </div>
+        <span class="stat-label">Commission payée</span>
+        <div class="stat-value text-primary">{{ wallet.totalCommissionPaid | number:'1.0-2' }} DT</div>
+        <div class="small text-muted mt-1 fw-bold">Total frais plate-forme</div>
+      </div>
+    </div>
+
+    <!-- Stripe Section -->
+    <div class="stripe-connect-card d-flex flex-column flex-md-row justify-content-between align-items-center animate-fade-in-up" style="animation-delay: 0.4s;">
+      <div class="d-flex align-items-start gap-4 mb-4 mb-md-0">
+        <div class="bg-white p-3 rounded-4 shadow-sm border">
+          <img src="https://stripe.com/favicon.ico" alt="Stripe" width="32">
+        </div>
+        <div>
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <h4 class="fw-bold mb-0 text-dark">Stripe Connect Dashboard</h4>
+            <span class="badge-premium status-{{stripeStatus}}" style="font-size: 0.7rem;">
+               {{ stripeStatus }}
+            </span>
+          </div>
+          <p class="text-muted opacity-80 mb-0" style="max-width: 500px;">{{ stripeStatusMessage }}</p>
+        </div>
+      </div>
+      <button 
+        *ngIf="stripeStatus !== 'ACTIVE'"
+        class="btn btn-primary px-4 py-2 rounded-pill scale-up shadow" 
+        (click)="setupStripe()">
+        <i class="bi bi-gear-fill me-2"></i> Configurer Stripe
+      </button>
+    </div>
+
+    <!-- Latest Transactions -->
+    <div class="transactions-section animate-fade-in-up" style="animation-delay: 0.5s;">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="section-title mb-0">Historique des Flux Financiers</h4>
+        <button class="btn btn-outline-secondary btn-sm rounded-pill px-3" (click)="loadTransactions()">
+          <i class="bi bi-arrow-clockwise me-1"></i> Rafraîchir
+        </button>
+      </div>
+
+      <!-- Tx loading -->
+      <div *ngIf="txLoading" class="text-center py-4">
+        <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+        <span class="text-muted">Chargement de l'historique...</span>
+      </div>
+
+      <div *ngIf="!txLoading" class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead>
+            <tr class="text-uppercase small fw-bold text-muted letter-spacing-1">
+              <th class="border-0 px-3" width="120">Date</th>
+              <th class="border-0 px-3" width="150">Référence</th>
+              <th class="border-0 px-3">Détails de transaction</th>
+              <th class="border-0 px-3 text-end" width="150">Montant (Net)</th>
+              <th class="border-0 px-3 text-center" width="120">Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let tr of transactions" class="tr-row">
+              <td class="tr-date">{{ tr.createdAt | date:'dd MMM yyyy' }}</td>
+              <td class="tr-ref"><code>#{{ tr.reference }}</code></td>
+              <td>
+                <div class="tr-desc">{{ tr.description }}</div>
+                <div class="small text-muted opacity-80">Catégorie: {{ tr.type }}</div>
+              </td>
+              <td class="text-end tr-amount" [class.amount-plus]="tr.type === 'CREDIT'" [class.amount-minus]="tr.type === 'DEBIT'">
+                {{ tr.type === 'CREDIT' ? '+' : '-' }} {{ tr.montant | number:'1.2-2' }} DT
+              </td>
+              <td class="text-center">
+                <span [ngClass]="tr.status === 'PROCESSED' ? 'badge bg-success bg-opacity-10 text-success' : 'badge bg-warning bg-opacity-10 text-warning'"
+                      class="fw-bold rounded-pill" style="padding: 0.4rem 0.8rem; font-size: 0.75rem;">
+                   <i class="bi bi-check2 me-1" *ngIf="tr.status === 'PROCESSED'"></i>
+                   <i class="bi bi-clock me-1" *ngIf="tr.status !== 'PROCESSED'"></i>
+                   {{ tr.status || 'PENDING' }}
+                </span>
+              </td>
+            </tr>
+            <tr *ngIf="transactions.length === 0">
+              <td colspan="5" class="text-center py-5">
+                <div class="py-4">
+                  <i class="bi bi-wallet2 text-muted display-4 d-block mb-3"></i>
+                  <p class="text-muted fw-bold">Aucune transaction enregistrée</p>
+                  <p class="text-muted small">Les mouvements de fonds apparaîtront ici après chaque paiement validé.</p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
 </div>

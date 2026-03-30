@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { StripeService } from '../../../core/services/stripe.service';
 import { ContractService } from '../../../core/services/contract.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { environment } from '../../../../environments/environment';
 
 @Component({
@@ -33,13 +34,15 @@ export class CheckoutComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private stripeService: StripeService,
-    private contractService: ContractService
+    private contractService: ContractService,
+    public authService: AuthService
   ) {}
 
   ngOnInit(): void {
-    this.contractId = Number(this.route.snapshot.params['contractId']);
+    this.contractId = Number(this.route.snapshot.queryParams['contractId'] || this.route.snapshot.params['contractId']);
     this.loadContract();
-    this.email = 'client@trustedwork.com';
+    // Récupérer l'email réel du client depuis la session
+    this.email = this.authService.getEmail() || 'client@trustedwork.com';
     
     // Remplir les champs par défaut pour le test
     if (this.simulationMode) {
@@ -52,10 +55,17 @@ export class CheckoutComponent implements OnInit {
   }
 
   loadContract(): void {
+    if (!this.contractId) {
+      this.error = 'ID de contrat manquant';
+      return;
+    }
     this.contractService.getById(this.contractId).subscribe({
       next: (contract) => {
         this.contract = contract;
         this.amount = contract.montantTotal;
+        if (contract.status === 'ACTIVE' || contract.status === 'COMPLETED') {
+          this.error = 'Ce contrat a déjà été payé et est actif.';
+        }
       },
       error: (err) => {
         this.error = 'Erreur lors du chargement du contrat';
@@ -91,6 +101,10 @@ export class CheckoutComponent implements OnInit {
   }
 
   async onSubmit() {
+    if (this.contract?.status === 'ACTIVE' || this.contract?.status === 'COMPLETED') {
+      this.error = 'Paiement impossible : ce contrat est déjà actif.';
+      return;
+    }
     // Validation des champs
     if (!this.cardNumber || !this.expiryDate || !this.cvc) {
       this.error = 'Veuillez remplir tous les champs de la carte';

@@ -6,6 +6,7 @@ import { MilestoneService } from '../../../core/services/milestone.service';
 import { Contract } from '../../../core/models/contract.model';
 import { Milestone } from '../../../core/models/milestone.model';
 import { AuthService } from '../../../core/services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-contract-detail',
@@ -24,7 +25,8 @@ export class ContractDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private contractService: ContractService,
     private milestoneService: MilestoneService,
-    public authService: AuthService
+    public authService: AuthService,
+    private router: Router
   ) {}
 
   get isClient(): boolean {
@@ -79,6 +81,23 @@ export class ContractDetailComponent implements OnInit {
 
   getTotalMilestonesAmount(): number {
     return this.milestones.reduce((sum, m) => sum + m.montant, 0);
+  }
+
+  getReleasedAmount(): number {
+    return this.milestones
+      .filter(m => m.status === 'APPROVED' || m.status === 'AUTO_APPROVED')
+      .reduce((sum, m) => sum + m.montant, 0);
+  }
+
+  isPaymentReady(): boolean {
+    if (!this.contract || this.contract.status !== 'DRAFT') return false;
+    return this.getTotalMilestonesAmount() === this.contract.montantTotal;
+  }
+
+  goToPayment(): void {
+    if (this.isPaymentReady() && this.contract) {
+      this.router.navigate(['/payment/checkout', this.contract.id]);
+    }
   }
 
   deleteMilestone(id: number): void {

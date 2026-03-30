@@ -1,29 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { WalletService } from '../../../core/services/wallet.service';
-
-export interface Wallet {
-  id: number;
-  userId: number;
-  balance: number;
-  totalEarned: number;
-  totalSpent: number;
-  totalCommissionPaid: number;
-  stripeAccountId: string;
-  stripeAccountStatus: string;
-  // createdAt et updatedAt peuvent ne pas exister dans la réponse API
-}
-
-export interface Transaction {
-  id: number;
-  reference: string;
-  type: string;
-  montant: number;
-  description: string;
-  status: string;
-  createdAt: Date;
-}
+import { WalletService, Wallet, Transaction } from '../../../core/services/wallet.service';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-wallet-detail',
@@ -38,41 +17,48 @@ export class WalletDetailComponent implements OnInit {
   stripeStatus: string = '';
   stripeStatusMessage: string = '';
   loading: boolean = false;
-  userId: number = 1;
+  txLoading: boolean = false;
+  walletError: string = '';
+  userId: number = 0;
 
   constructor(
     private walletService: WalletService,
-    private router: Router
+    private router: Router,
+    public authService: AuthService
   ) {}
 
   ngOnInit(): void {
-    this.loadWallet();
-    this.loadStripeStatus();
-    this.loadTransactions();
+    const userId = this.authService.getUserId();
+    if (userId) {
+      this.userId = userId;
+      this.loadWallet();
+      this.loadStripeStatus();
+      this.loadTransactions();
+    } else {
+      this.walletError = 'Utilisateur non connecté.';
+    }
   }
 
   loadWallet(): void {
     this.loading = true;
+    this.walletError = '';
     this.walletService.getWallet(this.userId).subscribe({
       next: (wallet) => {
-        // ✅ Utiliser directement le wallet reçu de l'API
         this.wallet = wallet;
         this.loading = false;
+        console.log('✅ Wallet loaded:', wallet);
       },
       error: (err) => {
-        console.error('Error loading wallet:', err);
+        console.error('❌ Error loading wallet:', err);
         this.loading = false;
-        // Simuler un wallet pour les tests
-        this.wallet = {
-          id: 1,
-          userId: this.userId,
-          balance: 1500,
-          totalEarned: 2500,
-          totalSpent: 1000,
-          totalCommissionPaid: 250,
-          stripeAccountId: '',
-          stripeAccountStatus: 'NOT_CREATED'
-        };
+        // Only show error — no static fallback to avoid misleading data
+        if (err.status === 404) {
+          this.walletError = 'Portefeuille non trouvé. Contactez l\'administrateur.';
+        } else if (err.status === 401) {
+          this.walletError = 'Session expirée. Veuillez vous reconnectez.';
+        } else {
+          this.walletError = `Erreur lors du chargement (${err.status || 'réseau'})`;
+        }
       }
     });
   }
@@ -80,7 +66,7 @@ export class WalletDetailComponent implements OnInit {
   loadStripeStatus(): void {
     this.walletService.getStripeStatus(this.userId).subscribe({
       next: (res) => {
-        this.stripeStatus = res.status;
+        this.stripeStatus = res.status || res;
         this.updateStatusMessage();
       },
       error: (err) => {
@@ -92,27 +78,23 @@ export class WalletDetailComponent implements OnInit {
   }
 
   loadTransactions(): void {
-    // Données mockées pour les tests
-    this.transactions = [
-      {
-        id: 1,
-        reference: 'TRX-ABC123',
-        type: 'CREDIT',
-        montant: 500,
-        description: 'Paiement contrat #1 - Jalon 1',
-        status: 'PROCESSED',
-        createdAt: new Date()
+    this.txLoading = true;
+    this.walletService.getTransactions(this.userId).subscribe({
+      next: (txs) => {
+        this.transactions = Array.isArray(txs) ? txs : [];
+        this.txLoading = false;
       },
-      {
-        id: 2,
-        reference: 'TRX-DEF456',
-        type: 'DEBIT',
-        montant: 1000,
-        description: 'Paiement contrat #2',
-        status: 'PROCESSED',
-        createdAt: new Date()
+      error: (err) => {
+        // /transactions endpoint may not exist yet on backend — silently ignore
+        this.transactions = [];
+        this.txLoading = false;
       }
-    ];
+    });
+  }
+
+  refresh(): void {
+    this.loadWallet();
+    this.loadTransactions();
   }
 
   updateStatusMessage(): void {
@@ -141,6 +123,22 @@ export class WalletDetailComponent implements OnInit {
       case 'PENDING': return 'status-pending';
       case 'INCOMPLETE': return 'status-incomplete';
       default: return 'status-default';
+    }
+  }
+
+  addTestFunds(): void {
+    const amount = prompt('Combien souhaitez-vous ajouter ? (Simulation DEV)', '1000');
+    if (amount && !isNaN(Number(amount)) && Number(amount) > 0) {
+      this.walletService.credit(this.userId, Number(amount)).subscribe({
+        next: (wallet) => {
+          this.wallet = wallet;
+          alert(`✅ ${amount} DT ajoutés avec succès ! Nouveau solde : ${wallet.balance} DT`);
+        },
+        error: (err) => {
+          console.error(err);
+          alert('❌ Erreur lors de l\'ajout de fonds : ' + (err.error?.message || err.message));
+        }
+      });
     }
   }
 }

@@ -1,116 +1,241 @@
-<div class="container">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Détails du Contrat</h2>
-    <a routerLink="/contracts" class="btn btn-secondary">Retour</a>
+<div class="container mt-4 animate-fade-in">
+  
+  <!-- Content Header -->
+  <div *ngIf="contract" class="page-header d-flex flex-column flex-md-row justify-content-between align-items-md-center shadow-lg">
+    <div class="header-content">
+      <div class="badge bg-white bg-opacity-25 mb-2 px-3 py-1 rounded-pill">
+        <i class="bi bi-file-earmark-check me-1"></i> Référence: {{ contract.reference || 'REF-' + contract.id }}
+      </div>
+      <h2 class="display-6 mt-1">{{ contract.projectTitle }}</h2>
+      <p class="mb-0 opacity-75">ID: {{ contract.id }} • Créé le {{ contract.createdAt | date:'dd MMM yyyy' }}</p>
+    </div>
+    
+    <div class="header-actions mt-3 mt-md-0 d-flex flex-wrap gap-2">
+      <button *ngIf="isClient && contract.status === 'DRAFT' && isPaymentReady()" 
+              (click)="goToPayment()" 
+              class="btn btn-light text-primary border-0 scale-up">
+        <i class="bi bi-wallet2 me-2"></i> Payer (Dépôt Escrow)
+      </button>
+      
+      <a routerLink="/contracts" class="btn btn-outline-light border-2">
+        <i class="bi bi-arrow-left me-2"></i> Retour
+      </a>
+    </div>
   </div>
 
   <div *ngIf="loading" class="text-center py-5">
-    <div class="spinner-border text-primary" role="status">
+    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
       <span class="visually-hidden">Chargement...</span>
     </div>
+    <p class="mt-3 text-muted">Initialisation de votre workspace sécurisé...</p>
   </div>
 
-  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+  <div *ngIf="error" class="alert alert-danger shadow-sm border-0 rounded-4">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ error }}
+  </div>
 
-  <div *ngIf="contract && !loading">
-    <!-- Informations contrat -->
-    <div class="card mb-4">
-      <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">Informations Générales</h5>
-      </div>
-      <div class="card-body">
-        <div class="row">
-          <div class="col-md-6">
-            <p><strong>ID:</strong> {{ contract.id }}</p>
-            <p><strong>Référence:</strong> {{ contract.reference }}</p>
-            <p><strong>Projet:</strong> {{ contract.projectTitle }}</p>
-            <p><strong>Montant Total:</strong> {{ contract.montantTotal }} DT</p>
+  <div *ngIf="contract && !loading" class="row g-4">
+    
+    <!-- Left Column: Contract Info & Summary -->
+    <div class="col-lg-4">
+      <div class="info-card">
+        <div class="card-title-header d-flex align-items-center">
+          <i class="bi bi-info-circle-fill me-2 text-primary"></i>
+          Vue d'ensemble
+        </div>
+        <div class="card-body-content">
+          <div class="row g-4">
+            <div class="col-6">
+              <span class="info-label">Statut</span>
+              <span class="badge-premium badge-{{contract.status}}">
+                {{ contract.status }}
+              </span>
+            </div>
+            <div class="col-6 text-end">
+              <span class="info-label">Budget Global</span>
+              <span class="info-value text-primary h4 mb-0">{{ contract.montantTotal | number:'1.0-2' }} DT</span>
+            </div>
+            
+            <div class="col-12 mt-4">
+              <span class="info-label">Description du projet</span>
+              <div class="description-box text-muted">
+                {{ contract.description }}
+              </div>
+            </div>
+
+            <div class="col-6">
+              <span class="info-label">Client</span>
+              <div class="d-flex align-items-center mt-1">
+                <div class="bg-primary bg-opacity-10 text-primary p-2 rounded-3 me-2">
+                  <i class="bi bi-person"></i>
+                </div>
+                <span class="fw-semibold">#{{ contract.clientId }}</span>
+              </div>
+            </div>
+            <div class="col-6">
+              <span class="info-label">Freelancer</span>
+              <div class="d-flex align-items-center mt-1">
+                <div class="bg-success bg-opacity-10 text-success p-2 rounded-3 me-2">
+                  <i class="bi bi-person-badge"></i>
+                </div>
+                <span class="fw-semibold">#{{ contract.freelancerId }}</span>
+              </div>
+            </div>
           </div>
-          <div class="col-md-6">
-            <p><strong>Statut:</strong> 
-              <span [class]="getStatusClass(contract.status)">{{ contract.status }}</span>
+
+          <!-- Progression box -->
+          <div class="mt-5 progression-section" *ngIf="contract.status !== 'DRAFT'">
+            <div class="d-flex justify-content-between align-items-end mb-2">
+              <div>
+                <h6 class="mb-0 fw-bold">Escrow libéré</h6>
+                <small class="text-muted">{{ (getReleasedAmount() / contract.montantTotal * 100) | number:'1.0-0' }}% du total</small>
+              </div>
+              <div class="text-end">
+                <span class="h5 mb-0 fw-bold text-success">{{ getReleasedAmount() | number:'1.0-2' }}</span>
+                <span class="text-muted">/ {{ contract.montantTotal }} DT</span>
+              </div>
+            </div>
+            <div class="progress">
+              <div class="progress-bar bg-success" role="progressbar" 
+                   [style.width.%]="(getReleasedAmount() / contract.montantTotal) * 100">
+              </div>
+            </div>
+            <p class="small text-muted mb-0">
+               <i class="bi bi-shield-check text-success me-1"></i> Fond sécurisé en séquestre
             </p>
-            <p><strong>Client ID:</strong> {{ contract.clientId }}</p>
-            <p><strong>Freelancer ID:</strong> {{ contract.freelancerId }}</p>
-            <p><strong>Date création:</strong> {{ contract.createdAt | date:'dd/MM/yyyy HH:mm' }}</p>
           </div>
         </div>
-        <p><strong>Description:</strong> {{ contract.description }}</p>
       </div>
     </div>
 
-    <!-- Jalons -->
-    <div class="card">
-      <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Jalons du Contrat</h5>
-        <a *ngIf="isClient || isAdmin" [routerLink]="['/contracts', contract.id, 'milestones', 'new']" class="btn btn-sm btn-light">
-          + Ajouter Jalon
-        </a>
-      </div>
-      <div class="card-body">
-        <div class="table-responsive">
-          <table class="table table-hover">
-            <thead>
-              <tr>
-                <th>Ordre</th>
-                <th>Titre</th>
-                <th>Montant</th>
-                <th>Deadline</th>
-                <th>Statut</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let milestone of milestones">
-                <td>{{ milestone.ordre }}</td>
-                <td>{{ milestone.titre }}</td>
-                <td>{{ milestone.montant }} DT</td>
-                <td>{{ milestone.deadline | date:'dd/MM/yyyy' }}</td>
-                <td>
-                  <span [class]="getStatusClass(milestone.status)">
-                    {{ milestone.status }}
-                  </span>
-                </td>
-                <td>
-                  <a [routerLink]="['/milestones', milestone.id]" class="btn btn-sm btn-info me-1">Détails</a>
-                  
-                  <button *ngIf="isFreelancer && milestone.status === 'PENDING'" 
-                          (click)="startMilestone(milestone.id!)" 
-                          class="btn btn-sm btn-primary me-1">Démarrer</button>
-                          
-                  <button *ngIf="isFreelancer && (milestone.status === 'IN_PROGRESS' || milestone.status === 'STARTED')" 
-                          (click)="submitMilestone(milestone.id!)" 
-                          class="btn btn-sm btn-success me-1">Soumettre</button>
+    <!-- Right Column: Milestones -->
+    <div class="col-lg-8">
+      <div class="info-card">
+        <div class="card-title-header d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center">
+            <i class="bi bi-layers-fill me-2 text-success"></i>
+            Workflow des Jalons
+          </div>
+          <div *ngIf="contract.status === 'DRAFT'">
+             <span class="badge bg-light text-dark fw-normal me-2 border">
+               Total Planifié: <strong>{{ getTotalMilestonesAmount() }} / {{ contract.montantTotal }} DT</strong>
+             </span>
+             <a *ngIf="isClient || isAdmin" [routerLink]="['/contracts', contract.id, 'milestones', 'new']" 
+                class="btn btn-sm btn-success rounded-pill px-3 shadow-sm scale-up">
+               <i class="bi bi-plus-lg me-1"></i> Ajouter Jalon
+             </a>
+          </div>
+        </div>
+        <div class="card-body-content">
+          <div class="table-responsive">
+            <table class="table table-hover table-borderless align-middle mb-0">
+              <thead>
+                <tr>
+                  <th width="80">Ordre</th>
+                  <th>Détails du Jalon</th>
+                  <th width="150" class="text-end">Montant</th>
+                  <th width="120" class="text-center">Statut</th>
+                  <th width="120" class="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let milestone of milestones" class="milestone-row">
+                  <td class="text-center">
+                    <span class="bg-light text-muted fw-bold p-2 rounded-3 border d-inline-block" style="width: 35px; height: 35px;">
+                      {{ milestone.ordre }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="fw-bold text-dark">{{ milestone.titre }}</div>
+                    <div class="small text-muted text-truncate" style="max-width: 250px;">{{ milestone.description }}</div>
+                    <div class="small mt-1">
+                      <i class="bi bi-calendar3 me-1"></i> {{ milestone.deadline | date:'dd MMM yyyy' }}
+                    </div>
+                  </td>
+                  <td class="text-end">
+                    <div class="fw-bold">{{ milestone.montant | number:'1.2-2' }} DT</div>
+                  </td>
+                  <td class="text-center">
+                    <span [class]="'badge-premium status-' + milestone.status" 
+                          style="font-size: 0.7rem; padding: 0.4rem 0.8rem;">
+                      {{ milestone.status }}
+                    </span>
+                  </td>
+                  <td class="text-end">
+                    <div class="d-flex justify-content-end gap-1">
+                      <!-- Common actions -->
+                      <a [routerLink]="['/milestones', milestone.id]" class="btn-action btn-view shadow-sm" title="Détails">
+                        <i class="bi bi-eye-fill"></i>
+                      </a>
+                      
+                      <!-- Freelancer actions -->
+                      <button *ngIf="isFreelancer && milestone.status === 'PENDING' && contract.status === 'ACTIVE'" 
+                              (click)="startMilestone(milestone.id!)" 
+                              class="btn-action btn-start shadow-sm" title="Démarrer">
+                        <i class="bi bi-play-fill"></i>
+                      </button>
+                      
+                      <button *ngIf="isFreelancer && (milestone.status === 'IN_PROGRESS' || milestone.status === 'STARTED')" 
+                              (click)="submitMilestone(milestone.id!)" 
+                              class="btn-action btn-success-soft shadow-sm" title="Soumettre">
+                        <i class="bi bi-send-check-fill"></i>
+                      </button>
 
-                  <button *ngIf="(isClient || isAdmin) && milestone.status === 'SUBMITTED'" 
-                          (click)="approveMilestone(milestone.id!)" 
-                          class="btn btn-sm btn-success me-1">Approuver</button>
-                          
-                  <button *ngIf="(isClient || isAdmin) && milestone.status === 'SUBMITTED'" 
-                          (click)="rejectMilestone(milestone.id!)" 
-                          class="btn btn-sm btn-warning me-1">Rejeter</button>
+                      <!-- Client actions -->
+                      <button *ngIf="(isClient || isAdmin) && milestone.status === 'SUBMITTED'" 
+                              (click)="approveMilestone(milestone.id!)" 
+                              class="btn-action btn-success-soft shadow-sm" title="Approuver">
+                        <i class="bi bi-check-circle-fill"></i>
+                      </button>
+                      
+                      <button *ngIf="(isClient || isAdmin) && milestone.status === 'SUBMITTED'" 
+                              (click)="rejectMilestone(milestone.id!)" 
+                              class="btn-action btn-danger-soft shadow-sm" title="Rejeter">
+                        <i class="bi bi-x-circle-fill"></i>
+                      </button>
 
-                  <button *ngIf="isClient || isAdmin" 
-                          (click)="deleteMilestone(milestone.id!)" 
-                          class="btn btn-sm btn-danger">Supprimer</button>
-                </td>
-              </tr>
-              <tr *ngIf="milestones.length === 0">
-                <td colspan="6" class="text-center text-muted py-4">
-                  Aucun jalon pour ce contrat
-                </td>
-              </tr>
-            </tbody>
-            <tfoot *ngIf="milestones.length > 0">
-              <tr class="table-active">
-                <th colspan="2">Total</th>
-                <th>{{ getTotalMilestonesAmount() }} DT</th>
-                <th colspan="3"></th>
-              </tr>
-            </tfoot>
-          </table>
+                      <!-- Admin/Delete actions -->
+                      <button *ngIf="(isClient || isAdmin) && contract.status === 'DRAFT'" 
+                              (click)="deleteMilestone(milestone.id!)" 
+                              class="btn-action btn-danger-soft shadow-sm" title="Supprimer">
+                        <i class="bi bi-trash-fill"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr *ngIf="milestones.length === 0">
+                  <td colspan="5" class="text-center py-5 border rounded-4 bg-light">
+                    <i class="bi bi-inbox text-muted display-4 d-block mb-3"></i>
+                    <p class="text-muted mb-0">Aucun jalon planifié pour le moment.</p>
+                    <p class="small text-muted" *ngIf="isClient">Ajoutez un jalon pour définir les étapes de paiement.</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- Summary Footer -->
+  <div *ngIf="contract && contract.status === 'DRAFT'" class="mt-4 p-4 border rounded-4 bg-white d-flex flex-column flex-md-row justify-content-between align-items-center shadow-sm">
+    <div class="mb-3 mb-md-0">
+      <h6 class="mb-1 text-muted text-uppercase small letter-spacing-1">Validation requise</h6>
+      <p class="mb-0" *ngIf="!isPaymentReady()">
+        <i class="bi bi-info-circle text-warning me-2"></i>
+        La somme des jalons ({{ getTotalMilestonesAmount() }} DT) doit être égale au montant total ({{ contract.montantTotal }} DT).
+      </p>
+      <p class="mb-0 text-success fw-bold" *ngIf="isPaymentReady()">
+        <i class="bi bi-check-circle text-success me-2"></i>
+        Configuration correcte. Prêt pour le dépôt séquestre.
+      </p>
+    </div>
+    <button *ngIf="isClient && isPaymentReady()" 
+            (click)="goToPayment()" 
+            class="btn btn-primary px-4 py-2 rounded-pill scale-up">
+      Procéder au Paiement
+    </button>
+  </div>
+
 </div>

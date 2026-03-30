@@ -23,6 +23,7 @@ import java.util.Optional;
 public class MilestoneServiceImpl implements IMilestoneService {
 
     private final MilestoneRepository milestoneRepository;
+    private final IPaymentService paymentService;
 
     @Override
     public Milestone createMilestone(Milestone milestone) {
@@ -126,7 +127,13 @@ public class MilestoneServiceImpl implements IMilestoneService {
         milestone.setStatus(MilestoneStatus.APPROVED);
         milestone.setValidatedAt(LocalDateTime.now());
 
-        return milestoneRepository.save(milestone);
+        Milestone saved = milestoneRepository.save(milestone);
+        try {
+            paymentService.releaseApprovedMilestone(saved.getId());
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Payment release failed: " + e.getMessage(), e);
+        }
+        return saved;
     }
 
     @Override
@@ -144,7 +151,13 @@ public class MilestoneServiceImpl implements IMilestoneService {
         milestone.setStatus(MilestoneStatus.AUTO_APPROVED);
         milestone.setValidatedAt(LocalDateTime.now());
 
-        return milestoneRepository.save(milestone);
+        Milestone saved = milestoneRepository.save(milestone);
+        try {
+            paymentService.releaseApprovedMilestone(saved.getId());
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Payment release failed: " + e.getMessage(), e);
+        }
+        return saved;
     }
 
     @Override

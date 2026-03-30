@@ -13,6 +13,16 @@ export interface Wallet {
   stripeAccountStatus: string;
 }
 
+export interface Transaction {
+  id: number;
+  reference: string;
+  type: string;
+  montant: number;
+  description: string;
+  status: string;
+  createdAt: Date;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -23,6 +33,10 @@ export class WalletService {
 
   getWallet(userId: number): Observable<Wallet> {
     return this.http.get<Wallet>(`${this.apiUrl}/user/${userId}`);
+  }
+
+  getTransactions(userId: number): Observable<Transaction[]> {
+    return this.http.get<Transaction[]>(`${this.apiUrl}/user/${userId}/transactions`);
   }
 
   credit(userId: number, amount: number): Observable<Wallet> {

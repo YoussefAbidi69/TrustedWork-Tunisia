@@ -1,115 +1,195 @@
-.card {
-  border-radius: 16px;
-  border: none;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+:host {
+  display: block;
+  --primary: #4361ee;
+  --primary-light: #4895ef;
+  --secondary: #3f37c9;
+  --accent: #4cc9f0;
+  --success: #06d6a0;
+  --warning: #ffd166;
+  --danger: #ef476f;
+  --bg-color: #f8f9fa;
+  --text-dark: #2b2d42;
+  --text-muted: #8d99ae;
+  --card-bg: rgba(255, 255, 255, 0.95);
 }
 
-.card-header {
-  border-radius: 16px 16px 0 0;
-  background: linear-gradient(135deg, #0d6efd, #0a58ca);
+.wallet-header {
+  margin-bottom: 2.5rem;
+  border-radius: 24px;
+  background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%);
+  padding: 3rem;
+  color: white;
+  box-shadow: 0 10px 30px rgba(63, 55, 201, 0.2);
+  position: relative;
+  overflow: hidden;
 }
 
-.balance {
-  font-size: 2.5rem;
-  font-weight: bold;
-  color: #198754;
-  margin-top: 8px;
+.wallet-header::after {
+  content: "";
+  position: absolute;
+  top: -20%;
+  right: -5%;
+  width: 250px;
+  height: 250px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 50%;
 }
 
-.stats-card {
-  background: #f8f9fa;
+.balance-title {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  opacity: 0.8;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.balance-amount {
+  font-size: 3.5rem;
+  font-weight: 800;
+  letter-spacing: -1px;
+  margin-bottom: 1.5rem;
+}
+
+.btn-topup {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 0.8rem 1.8rem;
   border-radius: 12px;
-  padding: 15px;
-  text-align: center;
-  transition: all 0.3s ease;
-}
-
-.stats-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-
-.stats-card .number {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #0d6efd;
-}
-
-.status-badge {
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 12px;
   font-weight: 600;
-  display: inline-block;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
 }
 
-.status-active {
-  background: #d1e7dd;
-  color: #0f5132;
+.btn-topup:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+  color: white;
 }
 
-.status-pending {
-  background: #fff3cd;
-  color: #856404;
+/* Stats Row */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
 }
 
-.status-incomplete {
-  background: #f8d7da;
-  color: #721c24;
-}
-
-.status-default {
-  background: #e2e3e5;
-  color: #41464b;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, #0d6efd, #0a58ca);
-  border: none;
-  padding: 8px 20px;
-  font-weight: 500;
-  border-radius: 8px;
+.stat-card-premium {
+  background: white;
+  padding: 2rem;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
 }
 
-.btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3);
+.stat-card-premium:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.07);
+}
+
+.stat-icon {
+  width: 45px;
+  height: 45px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.2rem;
+  font-size: 1.2rem;
+}
+
+.icon-earned { background: #ebfbee; color: #40c057; }
+.icon-spent { background: #fff5f5; color: #fa5252; }
+.icon-commission { background: #f0f7ff; color: #4361ee; }
+
+.stat-label {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+  display: block;
+}
+
+.stat-value {
+  color: var(--text-dark);
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+/* Stripe Connect Box */
+.stripe-connect-card {
+  background: #f8f9ff;
+  border-radius: 20px;
+  padding: 2.5rem;
+  border: 2px dashed #e0e6ed;
+  margin-bottom: 2.5rem;
+}
+
+.stripe-badge-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.stripe-status-label {
+  font-weight: 700;
+  font-size: 0.85rem;
+  margin-right: 1rem;
+  color: #4b5a75;
+}
+
+/* Transactions Table */
+.transactions-section {
+  background: white;
+  border-radius: 24px;
+  padding: 2.5rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+}
+
+.section-title {
+  font-weight: 800;
+  font-size: 1.4rem;
+  color: var(--text-dark);
+  margin-bottom: 2rem;
 }
 
 .table {
-  margin-bottom: 0;
+  border-collapse: separate;
+  border-spacing: 0 8px;
 }
 
-.table th {
-  font-weight: 600;
-  color: #495057;
-  border-top: none;
+.tr-row {
+  background: #fcfcfd;
+  transition: all 0.2s ease;
 }
 
-.badge {
-  padding: 5px 10px;
-  font-weight: 500;
-  border-radius: 20px;
-}
-
-.text-success {
-  color: #198754 !important;
-  font-weight: 500;
-}
-
-.text-danger {
-  color: #dc3545 !important;
-  font-weight: 500;
-}
-
-code {
+.tr-row:hover {
   background: #f8f9fa;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 12px;
+  transform: scale(1.005);
 }
 
-hr {
-  margin: 1.5rem 0;
+.tr-row td {
+  padding: 1.2rem;
+  vertical-align: middle;
+  border-top: 1px solid #f1f3f5;
+  border-bottom: 1px solid #f1f3f5;
+}
+
+.tr-row td:first-child { border-left: 1px solid #f1f3f5; border-radius: 12px 0 0 12px; }
+.tr-row td:last-child { border-right: 1px solid #f1f3f5; border-radius: 0 12px 12px 0; }
+
+.tr-date { font-weight: 600; color: var(--text-muted); font-size: 0.9rem; }
+.tr-ref { font-family: monospace; font-size: 0.85rem; color: var(--primary); }
+.tr-desc { font-weight: 600; color: #495057; }
+.tr-amount { font-weight: 800; font-size: 1rem; }
+
+.amount-plus { color: #2fb344; }
+.amount-minus { color: #d63939; }
+
+@media (max-width: 992px) {
+  .stats-grid { grid-template-columns: 1fr; }
+  .balance-amount { font-size: 2.5rem; }
 }

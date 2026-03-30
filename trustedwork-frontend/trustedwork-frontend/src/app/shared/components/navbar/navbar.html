@@ -25,8 +25,8 @@
         
         <!-- ✅ Paiement - Client uniquement -->
         <li class="nav-item" *ngIf="authService.getRole() === 'CLIENT' || authService.getRole() === 'ADMIN'">
-          <a class="nav-link" routerLink="/payment/checkout/1" routerLinkActive="active">
-            <i class="bi bi-credit-card"></i> Paiement
+          <a class="nav-link px-3" routerLink="/payment/list" routerLinkActive="active">
+            <i class="bi bi-credit-card-2-front me-1"></i> Mes Paiements
           </a>
         </li>
 

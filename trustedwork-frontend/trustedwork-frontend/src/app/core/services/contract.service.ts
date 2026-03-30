@@ -12,11 +12,13 @@ export class ContractService {
 
   constructor(private api: ApiService) {}
 
-  getAll(page: number = 0, size: number = 10, useMeEndpoint: boolean = false): Observable<any> {
-    const params: any = { page, size };
-    if (useMeEndpoint) {
-      return this.api.get<any>(`${this.endpoint}/me`, params);
-    }
+  getAll(
+    page: number = 0,
+    size: number = 10,
+    filters?: { userId?: number; freelancerId?: number }
+  ): Observable<any> {
+    // Backend filters results based on authenticated role; optional filters are for ADMIN usage.
+    const params: any = { page, size, ...(filters || {}) };
     return this.api.get<any>(this.endpoint, params);
   }
 

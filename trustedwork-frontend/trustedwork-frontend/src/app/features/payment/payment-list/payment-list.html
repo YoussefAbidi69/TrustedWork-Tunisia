@@ -1,0 +1,110 @@
+<div class="container mt-4 animate-fade-in">
+  <div class="page-header d-flex justify-content-between align-items-center shadow-lg p-4 rounded-4 mb-4" 
+       style="background: linear-gradient(135deg, #4361ee 0%, #3f37c9 100%); color: white;">
+    <div>
+      <h2 class="fw-bold mb-1">Mes Paiements</h2>
+      <p class="mb-0 opacity-75">Sécurisez vos projets via notre système d'escrow</p>
+    </div>
+    <div class="bg-white bg-opacity-20 p-3 rounded-circle">
+      <i class="bi bi-wallet2 fs-2"></i>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Chargement...</span>
+    </div>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <div *ngIf="!loading && contracts.length > 0" class="row g-4">
+    <div *ngFor="let contract of contracts" class="col-md-6 col-lg-4">
+      <div class="card h-100 border-0 shadow-sm hover-shadow transition-all rounded-4 position-relative overflow-hidden">
+        
+        <!-- Status Ribbon -->
+        <div class="position-absolute top-0 end-0 p-3">
+          <span [class]="getStatusClass(contract.status) + ' rounded-pill px-3 py-1 fw-bold small'">
+            {{ contract.status }}
+          </span>
+        </div>
+
+        <div class="card-body p-4">
+          <div class="d-flex align-items-center mb-3">
+            <div class="bg-primary bg-opacity-10 text-primary p-2 rounded-3 me-3">
+              <i class="bi bi-briefcase-fill"></i>
+            </div>
+            <h5 class="card-title mb-0 fw-bold text-truncate">{{ contract.projectTitle }}</h5>
+          </div>
+
+          <div class="mb-4">
+            <label class="small text-muted text-uppercase fw-bold letter-spacing-1 d-block mb-1">Montant du contrat</label>
+            <div class="h3 fw-bold text-primary mb-0">{{ contract.montantTotal | number:'1.0-2' }} DT</div>
+          </div>
+
+          <!-- Progress Info for Drafts -->
+          <div *ngIf="contract.status === 'DRAFT'" class="mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="small fw-semibold">Configuration des jalons</span>
+              <span class="small fw-bold" [class.text-success]="isReadyToPay(contract)" [class.text-warning]="!isReadyToPay(contract)">
+                {{ milestonesSum[contract.id] || 0 }} / {{ contract.montantTotal }} DT
+              </span>
+            </div>
+            <div class="progress" style="height: 6px;">
+              <div class="progress-bar" role="progressbar" 
+                   [style.width.%]="((milestonesSum[contract.id] || 0) / contract.montantTotal) * 100"
+                   [class.bg-success]="isReadyToPay(contract)"
+                   [class.bg-warning]="!isReadyToPay(contract)">
+              </div>
+            </div>
+            <p *ngIf="!isReadyToPay(contract)" class="x-small text-muted mt-2 mb-0">
+              <i class="bi bi-info-circle me-1"></i> Ajoutez des jalons pour atteindre le montant total.
+            </p>
+            <p *ngIf="isReadyToPay(contract)" class="x-small text-success mt-2 mb-0">
+              <i class="bi bi-check-circle me-1"></i> Configuration validée. Prêt pour le paiement.
+            </p>
+          </div>
+
+          <!-- Info for Active -->
+          <div *ngIf="contract.status !== 'DRAFT'" class="mb-4 p-3 bg-light rounded-3">
+            <p class="small text-muted mb-0">
+              <i class="bi bi-shield-lock-fill text-success me-2"></i>
+              Ce contrat est sécurisé et actif. Les fonds sont en séquestre.
+            </p>
+          </div>
+
+          <div class="d-grid">
+            <!-- Payment Button -->
+            <button *ngIf="contract.status === 'DRAFT'" 
+                    class="btn btn-primary rounded-3 py-2 fw-bold"
+                    [disabled]="!isReadyToPay(contract)"
+                    (click)="goToCheckout(contract.id)">
+              <i class="bi bi-credit-card me-2"></i> Payer maintenant
+            </button>
+            
+            <!-- View Button -->
+            <a [routerLink]="['/contracts', contract.id]" 
+               class="btn btn-outline-secondary rounded-3 py-2 fw-bold mt-2"
+               *ngIf="contract.status !== 'DRAFT'">
+              <i class="bi bi-eye me-2"></i> Voir les détails
+            </a>
+
+            <!-- Manage Milestones (only for draft) -->
+            <a [routerLink]="['/contracts', contract.id]" 
+               class="btn btn-outline-primary rounded-3 py-2 fw-bold mt-2"
+               *ngIf="contract.status === 'DRAFT'">
+              <i class="bi bi-list-check me-2"></i> Gérer les jalons
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && contracts.length === 0" class="text-center py-5 bg-white rounded-4 shadow-sm">
+    <i class="bi bi-file-earmark-text text-muted display-1 mb-4"></i>
+    <h3>Aucun contrat trouvé</h3>
+    <p class="text-muted">Vous n'avez pas encore de contrats nécessitant un paiement.</p>
+    <a routerLink="/contracts/new" class="btn btn-primary mt-3">Créer un nouveau contrat</a>
+  </div>
+</div>

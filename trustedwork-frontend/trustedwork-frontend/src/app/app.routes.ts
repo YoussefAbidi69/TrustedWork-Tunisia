@@ -38,6 +38,10 @@ export const routes: Routes = [
 
   // ==================== PAIEMENTS (STRIPE) ====================
   {
+    path: 'payment/list',
+    loadComponent: () => import('./features/payment/payment-list/payment-list').then(m => m.PaymentListComponent)
+  },
+  {
     path: 'payment/checkout/:contractId',
     loadComponent: () => import('./features/payment/checkout/checkout').then(m => m.CheckoutComponent)
   },

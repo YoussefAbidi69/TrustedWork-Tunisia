@@ -84,7 +84,7 @@ export class MilestoneFormComponent implements OnInit {
     if (this.isEditMode) {
       this.milestoneService.update(this.milestone.id!, payload).subscribe({
         next: () => {
-          this.router.navigate(['/milestones', this.milestone.id]);
+          this.router.navigate(['/contracts', this.milestone.contractId]);
         },
         error: (err) => {
           this.error = 'Erreur lors de la modification';
@@ -95,7 +95,7 @@ export class MilestoneFormComponent implements OnInit {
     } else {
       this.milestoneService.create(payload).subscribe({
         next: (milestone) => {
-          this.router.navigate(['/milestones', milestone.id]);
+          this.router.navigate(['/contracts', milestone.contractId]);
         },
         error: (err) => {
           this.error = 'Erreur lors de la création';

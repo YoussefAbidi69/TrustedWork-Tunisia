@@ -44,9 +44,13 @@ public class PaymentController {
     public ResponseEntity<?> releasePayment(
             @RequestParam Long contractId,
             @RequestParam Long milestoneId,
-            @RequestParam BigDecimal amount) {
+            @RequestParam(required = false) BigDecimal amount) {
         try {
-            paymentService.releasePaymentToFreelancer(contractId, milestoneId, amount);
+            if (amount == null) {
+                paymentService.releaseApprovedMilestone(milestoneId);
+            } else {
+                paymentService.releasePaymentToFreelancer(contractId, milestoneId, amount);
+            }
             return ResponseEntity.ok(Map.of("success", true));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));

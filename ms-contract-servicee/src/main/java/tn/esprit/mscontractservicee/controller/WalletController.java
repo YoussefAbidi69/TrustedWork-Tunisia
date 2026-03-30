@@ -3,10 +3,15 @@ package tn.esprit.mscontractservicee.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import tn.esprit.mscontractservicee.dto.WalletResponse;
+import tn.esprit.mscontractservicee.dto.WalletTransactionResponse;
+import tn.esprit.mscontractservicee.entity.Transaction;
 import tn.esprit.mscontractservicee.service.IWalletService;
+import tn.esprit.mscontractservicee.repository.TransactionRepository;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -15,15 +20,49 @@ import java.util.Map;
 public class WalletController {
 
     private final IWalletService walletService;  // ✅ Interface
+    private final TransactionRepository transactionRepository;
+
+    private static WalletResponse toResponse(tn.esprit.mscontractservicee.entity.Wallet wallet) {
+        return WalletResponse.builder()
+                .id(wallet.getId())
+                .userId(wallet.getUserId())
+                .balance(wallet.getBalance())
+                .totalEarned(wallet.getTotalEarned())
+                .totalSpent(wallet.getTotalSpent())
+                .totalCommissionPaid(wallet.getTotalCommissionPaid())
+                .stripeAccountId(wallet.getStripeAccountId())
+                .stripeAccountStatus(wallet.getStripeAccountStatus())
+                .createdAt(wallet.getCreatedAt())
+                .updatedAt(wallet.getUpdatedAt())
+                .build();
+    }
 
     @GetMapping("/user/{userId}")
     public ResponseEntity<?> getWallet(@PathVariable Long userId) {
-        return ResponseEntity.ok(walletService.getOrCreateWallet(userId));
+        return ResponseEntity.ok(toResponse(walletService.getOrCreateWallet(userId)));
     }
 
     @PostMapping("/user/{userId}/credit")
     public ResponseEntity<?> credit(@PathVariable Long userId, @RequestParam BigDecimal amount) {
-        return ResponseEntity.ok(walletService.credit(userId, amount, "Manual credit"));
+        return ResponseEntity.ok(toResponse(walletService.credit(userId, amount, "Manual credit")));
+    }
+
+    @GetMapping("/user/{userId}/transactions")
+    public ResponseEntity<?> getWalletTransactions(@PathVariable Long userId) {
+        var wallet = walletService.getOrCreateWallet(userId);
+        List<Transaction> txs = transactionRepository.findByWalletIdOrderByCreatedAtDesc(wallet.getId());
+        List<WalletTransactionResponse> res = txs.stream()
+                .map(tx -> WalletTransactionResponse.builder()
+                        .id(tx.getId())
+                        .reference(tx.getReference())
+                        .type(tx.getType())
+                        .montant(tx.getMontant())
+                        .description(tx.getDescription())
+                        .status(tx.getStatus())
+                        .createdAt(tx.getCreatedAt())
+                        .build())
+                .toList();
+        return ResponseEntity.ok(res);
     }
 
     @PostMapping("/stripe/connect/{userId}")

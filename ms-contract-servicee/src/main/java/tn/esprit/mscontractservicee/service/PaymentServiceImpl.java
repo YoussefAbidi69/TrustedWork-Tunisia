@@ -11,6 +11,7 @@ import tn.esprit.mscontractservicee.enums.*;
 import tn.esprit.mscontractservicee.repository.*;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -76,6 +77,13 @@ public class PaymentServiceImpl implements IPaymentService {
             Contract contract = contractRepository.findById(contractId)
                     .orElseThrow(() -> new RuntimeException("Contract not found"));
 
+            if (contract.getStatus() != ContractStatus.DRAFT && contract.getStatus() != ContractStatus.PENDING_PAYMENT) {
+                throw new RuntimeException("Contract cannot be paid. Status: " + contract.getStatus());
+            }
+            if (escrowAccountRepository.findByContractId(contractId).isPresent()) {
+                throw new RuntimeException("Escrow already exists for contract: " + contractId);
+            }
+
             // Débiter le client
             walletService.debit(contract.getClientId(), contract.getMontantTotal(),
                     "SIMULATION: Paiement contrat #" + contractId);
@@ -88,6 +96,7 @@ public class PaymentServiceImpl implements IPaymentService {
                     .montantTotal(contract.getMontantTotal())
                     .status(EscrowStatus.LOCKED)
                     .lockedAt(LocalDateTime.now())
+                    .updatedAt(LocalDateTime.now())
                     .build();
             escrowAccountRepository.save(escrow);
 
@@ -129,6 +138,13 @@ public class PaymentServiceImpl implements IPaymentService {
         Contract contract = contractRepository.findById(contractId)
                 .orElseThrow(() -> new RuntimeException("Contract not found"));
 
+        if (contract.getStatus() != ContractStatus.DRAFT && contract.getStatus() != ContractStatus.PENDING_PAYMENT) {
+            throw new RuntimeException("Contract cannot be paid. Status: " + contract.getStatus());
+        }
+        if (escrowAccountRepository.findByContractId(contractId).isPresent()) {
+            throw new RuntimeException("Escrow already exists for contract: " + contractId);
+        }
+
         walletService.debit(contract.getClientId(), contract.getMontantTotal(),
                 "Paiement contrat #" + contractId);
 
@@ -139,6 +155,7 @@ public class PaymentServiceImpl implements IPaymentService {
                 .montantTotal(contract.getMontantTotal())
                 .status(EscrowStatus.LOCKED)
                 .lockedAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
                 .build();
         escrowAccountRepository.save(escrow);
 
@@ -168,6 +185,23 @@ public class PaymentServiceImpl implements IPaymentService {
     }
 
     @Override
+    public void releaseApprovedMilestone(Long milestoneId) throws Exception {
+        Milestone milestone = milestoneRepository.findById(milestoneId)
+                .orElseThrow(() -> new RuntimeException("Milestone not found"));
+
+        Long contractId = milestone.getContractId();
+        if (contractId == null) {
+            throw new RuntimeException("Milestone has no contractId: " + milestoneId);
+        }
+
+        Contract contract = contractRepository.findById(contractId)
+                .orElseThrow(() -> new RuntimeException("Contract not found"));
+
+        BigDecimal amount = requireMilestoneAmount(milestone, null);
+        doRelease(contract, milestone, amount);
+    }
+
+    @Override
     public void releasePaymentToFreelancer(Long contractId, Long milestoneId, BigDecimal amount) throws Exception {
         Contract contract = contractRepository.findById(contractId)
                 .orElseThrow(() -> new RuntimeException("Contract not found"));
@@ -175,20 +209,64 @@ public class PaymentServiceImpl implements IPaymentService {
         Milestone milestone = milestoneRepository.findById(milestoneId)
                 .orElseThrow(() -> new RuntimeException("Milestone not found"));
 
-        EscrowAccount escrow = escrowAccountRepository.findByContractId(contractId)
+        if (milestone.getContractId() == null || !milestone.getContractId().equals(contractId)) {
+            throw new RuntimeException("Milestone does not belong to contract. milestoneId="
+                    + milestoneId + " contractId=" + contractId + " milestone.contractId=" + milestone.getContractId());
+        }
+
+        BigDecimal safeAmount = requireMilestoneAmount(milestone, amount);
+        doRelease(contract, milestone, safeAmount);
+    }
+
+    private static BigDecimal requireMilestoneAmount(Milestone milestone, BigDecimal explicitAmount) {
+        if (milestone.getMontant() == null) {
+            throw new RuntimeException("Milestone amount (montant) is required. milestoneId=" + milestone.getId());
+        }
+        if (milestone.getMontant().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new RuntimeException("Milestone amount must be > 0. milestoneId=" + milestone.getId());
+        }
+
+        if (explicitAmount == null) {
+            return milestone.getMontant();
+        }
+        if (explicitAmount.compareTo(milestone.getMontant()) != 0) {
+            throw new RuntimeException("Amount must equal milestone amount. milestoneId=" + milestone.getId()
+                    + " expected=" + milestone.getMontant() + " provided=" + explicitAmount);
+        }
+        return explicitAmount;
+    }
+
+    private void doRelease(Contract contract, Milestone milestone, BigDecimal amount) {
+        if (contract.getStatus() != ContractStatus.ACTIVE) {
+            throw new RuntimeException("Contract is not active. contractId=" + contract.getId()
+                    + " status=" + contract.getStatus());
+        }
+        if (milestone.getStatus() != MilestoneStatus.APPROVED && milestone.getStatus() != MilestoneStatus.AUTO_APPROVED) {
+            throw new RuntimeException("Milestone is not approved. milestoneId=" + milestone.getId()
+                    + " status=" + milestone.getStatus());
+        }
+        if (transactionRepository.existsByMilestoneIdAndType(milestone.getId(), TransactionType.RELEASE)) {
+            throw new RuntimeException("Milestone already released. milestoneId=" + milestone.getId());
+        }
+
+        EscrowAccount escrow = escrowAccountRepository.findByContractId(contract.getId())
                 .orElseThrow(() -> new RuntimeException("Escrow not found"));
 
-        if (escrow.getMontantBloque().compareTo(amount) < 0) {
+        if (escrow.getMontantBloque() == null || escrow.getMontantBloque().compareTo(amount) < 0) {
             throw new RuntimeException("Insufficient escrow balance");
         }
 
-        // Calculer commission
         BigDecimal commissionRate = contract.getCommissionRate() != null ? contract.getCommissionRate() : BigDecimal.valueOf(10);
-        BigDecimal commission = amount.multiply(commissionRate.divide(BigDecimal.valueOf(100)));
+        BigDecimal commission = amount.multiply(commissionRate).divide(BigDecimal.valueOf(100), 6, RoundingMode.HALF_UP);
         BigDecimal netAmount = amount.subtract(commission);
 
+        if (netAmount.compareTo(BigDecimal.ZERO) < 0) {
+            throw new RuntimeException("Net amount cannot be negative. amount=" + amount + " commission=" + commission);
+        }
+
         if (simulationEnabled) {
-            log.info("🔧 SIMULATION: Releasing payment to freelancer - Contract: {}, Milestone: {}", contractId, milestoneId);
+            log.info("🔧 SIMULATION: Releasing payment to freelancer - Contract: {}, Milestone: {}",
+                    contract.getId(), milestone.getId());
             log.info("   Amount: {} (Commission: {}, Net: {})", amount, commission, netAmount);
         }
 
@@ -198,21 +276,23 @@ public class PaymentServiceImpl implements IPaymentService {
         if (escrow.getMontantBloque().compareTo(BigDecimal.ZERO) == 0) {
             escrow.setStatus(EscrowStatus.RELEASED);
             escrow.setReleasedAt(LocalDateTime.now());
+        } else {
+            escrow.setStatus(EscrowStatus.PARTIALLY_RELEASED);
         }
         escrow.setUpdatedAt(LocalDateTime.now());
         escrowAccountRepository.save(escrow);
 
-        // Créditer le freelancer
+        // Créditer le freelancer (net)
         walletService.credit(contract.getFreelancerId(), netAmount,
-                (simulationEnabled ? "SIMULATION: " : "") + "Paiement contrat #" + contractId + " - Jalon: " + milestone.getTitre());
+                (simulationEnabled ? "SIMULATION: " : "") + "Paiement contrat #" + contract.getId() + " - Jalon: " + milestone.getTitre());
 
-        // Créer la transaction
+        // Créer la transaction de libération (gross + commission + net)
         Wallet freelancerWallet = walletService.getOrCreateWallet(contract.getFreelancerId());
 
         Transaction transaction = Transaction.builder()
                 .reference((simulationEnabled ? "TRX-SIM-" : "TRX-") + UUID.randomUUID().toString().substring(0, 8).toUpperCase())
-                .contractId(contractId)
-                .milestoneId(milestoneId)
+                .contractId(contract.getId())
+                .milestoneId(milestone.getId())
                 .escrowId(escrow.getId())
                 .walletId(freelancerWallet.getId())
                 .type(TransactionType.RELEASE)
@@ -227,8 +307,14 @@ public class PaymentServiceImpl implements IPaymentService {
                 .build();
         transactionRepository.save(transaction);
 
-        log.info("{} Released {} DT to freelancer {}",
-                simulationEnabled ? "🔧 SIMULATION:" : "", netAmount, contract.getFreelancerId());
+        if (escrow.getStatus() == EscrowStatus.RELEASED) {
+            contract.setStatus(ContractStatus.COMPLETED);
+            contract.setUpdatedAt(LocalDateTime.now());
+            contractRepository.save(contract);
+        }
+
+        log.info("{} Released {} DT to freelancer {} (gross: {}, commission: {})",
+                simulationEnabled ? "🔧 SIMULATION:" : "", netAmount, contract.getFreelancerId(), amount, commission);
     }
 
     @Override

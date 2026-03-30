@@ -7,8 +7,6 @@ import { Contract } from '../../../core/models/contract.model';
 import { Milestone } from '../../../core/models/milestone.model';
 import { AuthService } from '../../../core/services/auth.service';
 
-
-
 @Component({
   selector: 'app-contract-list',
   standalone: true,
@@ -48,15 +46,12 @@ export class ContractListComponent implements OnInit {
 
   loadContracts(): void {
     this.loading = true;
-    const useMeEndpoint = !this.isAdmin;
-    
-    this.contractService.getAll(0, 100, useMeEndpoint).subscribe({
+    this.contractService.getAll(0, 100).subscribe({
       next: (response) => {
         this.contracts = response.content || response;
         this.loading = false;
-        
         this.contracts.forEach(contract => {
-          this.loadMilestonesForContract(contract.id!);
+          if (contract.id) this.loadMilestonesForContract(contract.id);
         });
       },
       error: (err) => {

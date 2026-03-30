@@ -1,0 +1,67 @@
+/* Premium Payment List styles */
+.container {
+  max-width: 1200px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+}
+
+.hover-shadow:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1) !important;
+}
+
+.transition-all {
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.x-small {
+  font-size: 0.75rem;
+}
+
+.letter-spacing-1 {
+  letter-spacing: 1px;
+}
+
+.progress {
+  border-radius: 50px;
+}
+
+.progress-bar {
+  border-radius: 50px;
+}
+
+.card {
+  background: white;
+}
+
+.card-title {
+  color: #1e293b;
+}
+
+.status-badge {
+  font-size: 0.65rem;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.status-DRAFT { background-color: #f1f5f9; color: #64748b; }
+.status-PENDING_PAYMENT, .status-PENDING { background-color: #fef9c3; color: #854d0e; }
+.status-ACTIVE { background-color: #dcfce7; color: #166534; }
+.status-COMPLETED { background-color: #dbeafe; color: #1e40af; }
+
+.btn {
+  border-radius: 12px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.bg-primary-soft { background-color: #f0f3ff; }
