@@ -76,4 +76,12 @@ public class RecruitmentApplicationRestController {
     public ResponseEntity<List<RecruitmentApplicationDTO>> getAll() {
         return ResponseEntity.ok(applicationService.getAll());
     }
+
+
+    @GetMapping("/statuses")
+    public ResponseEntity<List<RecruitmentApplicationDTO>> getByStatuses(
+            @RequestParam List<ApplicationStatus> statuses) {
+
+        return ResponseEntity.ok(applicationService.getByStatuses(statuses));
+    }
 }

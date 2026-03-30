@@ -86,4 +86,12 @@ public class RecruitmentApplicationServiceImpl implements IRecruitmentApplicatio
                 .map(mapper::toDTO)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<RecruitmentApplicationDTO> getByStatuses(List<ApplicationStatus> statuses) {
+        return applicationRepository.findByStatusIn(statuses)
+                .stream()
+                .map(mapper::toDTO)
+                .toList();
+    }
 }

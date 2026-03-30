@@ -15,4 +15,7 @@ public interface IRecruitmentApplicationService {
     void delete(Long id);
 
     List<RecruitmentApplicationDTO> getAll();
+
+    List<RecruitmentApplicationDTO> getByStatuses(List<ApplicationStatus> statuses);
+
 }

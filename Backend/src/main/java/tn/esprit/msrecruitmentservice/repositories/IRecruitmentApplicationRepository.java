@@ -23,4 +23,7 @@ public interface IRecruitmentApplicationRepository
 
     @Query("SELECT COUNT(a) FROM RecruitmentApplication a WHERE a.jobPosition.id = :jpId")
     Long countByJobPositionId(@Param("jpId") Long jobPositionId);
+
+
+    List<RecruitmentApplication> findByStatusIn(List<ApplicationStatus> statuses);
 }
