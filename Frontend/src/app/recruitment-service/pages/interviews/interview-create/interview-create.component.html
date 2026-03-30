@@ -1,0 +1,81 @@
+<div class="page animate-fade-in">
+    <app-recruitment-card [title]="title" [subtitle]="subtitle" icon="🎤">
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form-grid">
+
+            <div class="form-group">
+                <label for="applicationId">Application *</label>
+
+                <select id="applicationId" formControlName="applicationId">
+                    <option value="">Sélectionner une candidature</option>
+
+                    <option *ngFor="let app of applications" [value]="app.id">
+                        {{ app.jobPositionTitre }} | Freelancer {{ app.freelancerId }} | Score {{ app.matchingScore }}
+                    </option>
+
+                </select>
+
+                <span class="field-error"
+                    *ngIf="form.get('applicationId')?.invalid && form.get('applicationId')?.touched">
+                    Champ requis
+                </span>
+            </div>
+
+            <div class="form-group">
+                <label for="type">Type d'Entretien *</label>
+                <select id="type" formControlName="type">
+                    <option *ngFor="let t of typeOptions" [value]="t">{{ t }}</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="ordreEntretien">Numéro de Round *</label>
+                <input id="ordreEntretien" type="number" formControlName="ordreEntretien" placeholder="1, 2, 3..."
+                    min="1" />
+                <span class="field-hint">Ordre de passage de l'entretien</span>
+            </div>
+
+            <div class="form-group">
+                <label for="dureePrevueMinutes">Durée prévue (minutes) *</label>
+                <input id="dureePrevueMinutes" type="number" formControlName="dureePrevueMinutes" placeholder="60"
+                    min="15" />
+            </div>
+
+            <div class="form-group">
+                <label for="dateFinalConfirmee">Date & Heure *</label>
+                <input id="dateFinalConfirmee" type="datetime-local" formControlName="dateFinalConfirmee" />
+                <span class="field-error"
+                    *ngIf="form.get('dateFinalConfirmee')?.invalid && form.get('dateFinalConfirmee')?.touched">
+                    Date requise
+                </span>
+            </div>
+
+            <div class="form-group">
+                <label for="status">Statut *</label>
+                <select id="status" formControlName="status">
+                    <option *ngFor="let s of statusOptions" [value]="s">{{ s }}</option>
+                </select>
+            </div>
+
+            <div class="form-group full-width">
+                <label for="lienVisio">Lien Visio <span class="optional">(optionnel)</span></label>
+                <input id="lienVisio" formControlName="lienVisio"
+                    placeholder="https://meet.google.com/... ou https://zoom.us/j/..." />
+            </div>
+
+            <div class="phase-info full-width">
+                <span class="info-badge">ℹ️ Phase 1</span>
+                <span class="info-text">
+                    feedbackRecruteur & noteRecruteur ajoutés via PATCH /:id/feedback en Phase 2
+                </span>
+            </div>
+
+            <div class="form-actions full-width">
+                <button type="button" class="btn btn-outline" routerLink="/recruitment/interviews">Annuler</button>
+                <app-button-primary icon="📅" [loading]="loading" [disabled]="form.invalid">
+                    {{ submitLabel }}
+                </app-button-primary>
+            </div>
+
+        </form>
+    </app-recruitment-card>
+</div>

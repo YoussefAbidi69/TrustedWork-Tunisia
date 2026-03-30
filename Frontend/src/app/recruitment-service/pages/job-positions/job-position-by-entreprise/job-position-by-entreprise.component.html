@@ -1,0 +1,146 @@
+<div class="page animate-fade-in">
+
+    <!-- Header -->
+    <div class="pub-header">
+        <div class="pub-header-text">
+            <h1 class="pub-title">🏢 Mes Offres d'Emploi</h1>
+            <p class="pub-subtitle">{{ filtered.length }} offre{{ filtered.length !== 1 ? 's' : '' }} trouvée{{
+                filtered.length !== 1 ? 's' : '' }}</p>
+        </div>
+        <button class="btn-new" (click)="onCreate()">➕ Nouvelle offre</button>
+    </div>
+
+    <!-- Stats rapides -->
+    <div class="stats-row" *ngIf="!loading && allJobs.length > 0">
+        <div class="stat-card">
+            <span class="stat-value">{{ allJobs.length }}</span>
+            <span class="stat-label">Total</span>
+        </div>
+        <div class="stat-card stat-published">
+            <span class="stat-value">{{ totalPublished }}</span>
+            <span class="stat-label">Publiées</span>
+        </div>
+        <div class="stat-card stat-draft">
+            <span class="stat-value">{{ totalDraft }}</span>
+            <span class="stat-label">Brouillons</span>
+        </div>
+        <div class="stat-card stat-filled">
+            <span class="stat-value">{{ totalFilled }}</span>
+            <span class="stat-label">Pourvues</span>
+        </div>
+        <div class="stat-card stat-candidatures">
+            <span class="stat-value">{{ totalCandidatures }}</span>
+            <span class="stat-label">Candidatures</span>
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="filters-bar">
+        <div class="search-wrapper">
+            <span class="search-icon">🔍</span>
+            <input class="search-input" type="text" placeholder="Chercher par titre, localisation..."
+                [value]="searchText" (input)="onSearchChange($any($event.target).value)" />
+        </div>
+
+        <select class="filter-select" [value]="selectedContract" (change)="onContractChange($any($event.target).value)">
+            <option value="">Tous les contrats</option>
+            <option *ngFor="let type of contractTypes" [value]="type">{{ type }}</option>
+        </select>
+
+        <select class="filter-select" [value]="selectedStatus" (change)="onStatusChange($any($event.target).value)">
+            <option value="">Tous les statuts</option>
+            <option *ngFor="let s of statuses" [value]="s">{{ s }}</option>
+        </select>
+
+        <button class="btn-clear" (click)="clearFilters()" *ngIf="searchText || selectedContract || selectedStatus">
+            ✕ Effacer
+        </button>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-state" *ngIf="loading">
+        <div class="spinner"></div>
+        <span>Chargement de vos offres...</span>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!loading && filtered.length === 0 && allJobs.length === 0">
+        <span class="empty-icon">📭</span>
+        <p class="empty-title">Aucune offre publiée</p>
+        <p class="empty-sub">Créez votre première offre d'emploi.</p>
+        <button class="btn-new" (click)="onCreate()">➕ Créer une offre</button>
+    </div>
+
+    <div class="empty-state" *ngIf="!loading && filtered.length === 0 && allJobs.length > 0">
+        <span class="empty-icon">🔎</span>
+        <p class="empty-title">Aucun résultat</p>
+        <p class="empty-sub">Modifiez vos filtres.</p>
+        <button class="btn btn-outline btn-sm" (click)="clearFilters()">Réinitialiser</button>
+    </div>
+
+    <!-- Tableau des offres -->
+    <div class="table-wrapper" *ngIf="!loading && filtered.length > 0">
+        <table class="jobs-table">
+            <thead>
+                <tr>
+                    <th>Titre</th>
+                    <th>Contrat</th>
+                    <th>Localisation</th>
+                    <th>Salaire</th>
+                    <th>Deadline</th>
+                    <th>Candidatures</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let job of filtered" (click)="onView(job)" class="table-row">
+
+                    <td class="col-titre">
+                        <span class="job-titre">{{ job.titre }}</span>
+                        <span class="remote-tag" *ngIf="job.remote">🏠 Remote</span>
+                    </td>
+
+                    <td>
+                        <span class="contract-badge contract-{{ job.typeContrat }}">{{ job.typeContrat }}</span>
+                    </td>
+
+                    <td class="col-text">{{ job.localisation || '—' }}</td>
+
+                    <td class="col-salary">
+                        <span *ngIf="job.salaireMin || job.salaireMax">
+                            {{ job.salaireMin | currency:'TND':'symbol':'1.0-0' }}
+                            — {{ job.salaireMax | currency:'TND':'symbol':'1.0-0' }}
+                        </span>
+                        <span *ngIf="!job.salaireMin && !job.salaireMax" class="col-text">—</span>
+                    </td>
+
+                    <td>
+                        <span class="deadline-text" *ngIf="job.deadline">
+                            {{ job.deadline | date:'dd/MM/yyyy' }}
+                        </span>
+                        <span class="deadline-badge deadline-soon" *ngIf="isDeadlineSoon(job.deadline)"> ⏳</span>
+                        <span class="deadline-badge deadline-expired" *ngIf="isExpired(job.deadline)"> 🔴</span>
+                        <span *ngIf="!job.deadline" class="col-text">—</span>
+                    </td>
+
+                    <td class="col-center">
+                        <span class="candidatures-pill">👥 {{ job.nombreCandidatures ?? 0 }}</span>
+                    </td>
+
+                    <td>
+                        <span class="status-badge {{ getStatusClass(job.status) }}">{{ job.status }}</span>
+                    </td>
+
+                    <td class="col-actions" (click)="$event.stopPropagation()">
+                        <button class="action-btn view-btn" title="Voir" (click)="onView(job)">👁</button>
+                        <button class="action-btn edit-btn" title="Modifier" (click)="onEdit(job)">✏️</button>
+                        <button class="action-btn delete-btn" title="Supprimer" (click)="onDelete(job)">🗑</button>
+                    </td>
+
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>

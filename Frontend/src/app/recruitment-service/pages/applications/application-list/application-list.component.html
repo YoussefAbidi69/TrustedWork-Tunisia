@@ -1,0 +1,22 @@
+<div class="page animate-fade-in">
+    <app-recruitment-card title="Applications" subtitle="Pipeline de candidatures RH" icon="📋" [padding]="false">
+
+        <div card-actions>
+            <app-button-primary icon="➕" (onClick)="onCreate()">Nouvelle Candidature</app-button-primary>
+        </div>
+
+        <div class="filters-bar">
+            <input class="search-input" type="text" placeholder="🔍 Rechercher par poste, job ID, freelancer ID..."
+                (input)="onSearch($any($event.target).value)" />
+            <select class="filter-select" (change)="onFilterStatus($any($event.target).value)">
+                <option *ngFor="let s of statusOptions" [value]="s">{{ s || 'Tous les statuts' }}</option>
+            </select>
+            <span class="results-count">{{ filtered.length }} résultat(s)</span>
+        </div>
+
+        <app-recruitment-table [columns]="columns" [data]="filtered" [loading]="loading" (onView)="onView($event)"
+            (onEdit)="onEdit($event)" (onDelete)="onDelete($event)">
+        </app-recruitment-table>
+
+    </app-recruitment-card>
+</div>

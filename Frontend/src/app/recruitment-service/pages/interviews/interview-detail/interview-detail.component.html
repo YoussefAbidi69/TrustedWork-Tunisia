@@ -1,0 +1,146 @@
+<div class="page animate-fade-in">
+
+    <div class="loading-state" *ngIf="loading">
+        <div class="spinner"></div>
+        <span>Chargement...</span>
+    </div>
+
+    <div *ngIf="!loading && interview">
+
+        <div class="page-header">
+            <button class="btn btn-outline btn-sm" (click)="goBack()">← Retour</button>
+            <div class="header-actions">
+                <!-- PATCH /status -->
+                <div class="status-dropdown-wrap">
+                    <button class="btn btn-outline btn-sm" (click)="toggleStatusMenu()" [class.loading]="statusLoading">
+                        🔄 Statut
+                    </button>
+                    <div class="status-menu" *ngIf="showStatusMenu">
+                        <button *ngFor="let s of statusOptions" class="status-option"
+                            [class.active]="s === interview.status" (click)="changeStatus(s)">{{ s }}</button>
+                    </div>
+                </div>
+                <!-- PATCH /feedback -->
+                <button class="btn btn-outline btn-sm" (click)="showFeedbackModal = true">
+                    💬 Feedback
+                </button>
+                <button class="btn btn-outline btn-sm" (click)="onEdit()">✏️ Modifier</button>
+                <button class="btn btn-danger btn-sm" (click)="onDelete()">🗑 Supprimer</button>
+            </div>
+        </div>
+
+        <!-- Type banner -->
+        <div class="type-banner">
+            <div class="type-icon-wrap">
+                <span class="type-icon">{{ getTypeIcon(interview.type) }}</span>
+            </div>
+            <div class="type-info">
+                <h2 class="type-title">{{ interview.type }} Interview</h2>
+                <p class="type-sub">Round #{{ interview.ordreEntretien }} · Application #{{ interview.applicationId }}
+                </p>
+            </div>
+            <div class="banner-right">
+                <app-status-badge [status]="interview.status"></app-status-badge>
+                <span class="duration-chip">⏱ {{ interview.dureePrevueMinutes }} min</span>
+            </div>
+        </div>
+
+        <app-recruitment-card title="Détails de l'Entretien" icon="🎤">
+            <div class="detail-grid">
+
+                <div class="detail-item">
+                    <span class="detail-label">Date & Heure</span>
+                    <span class="detail-value">{{ interview.dateFinalConfirmee | date:'fullDate' }}</span>
+                    <span class="detail-sub">{{ interview.dateFinalConfirmee | date:'shortTime' }}</span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Durée</span>
+                    <span class="detail-value">{{ interview.dureePrevueMinutes }} minutes</span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Type</span>
+                    <span class="detail-value">{{ getTypeIcon(interview.type) }} {{ interview.type }}</span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Round</span>
+                    <span class="detail-value">#{{ interview.ordreEntretien }}</span>
+                </div>
+
+                <!-- Lien visio -->
+                <div class="detail-item full-width">
+                    <span class="detail-label">Lien Visio</span>
+                    <a *ngIf="interview.lienVisio" [href]="interview.lienVisio" target="_blank" class="visio-link">
+                        <span>🔗</span>
+                        <span class="visio-url">{{ interview.lienVisio }}</span>
+                        <span class="visio-open">Ouvrir ↗</span>
+                    </a>
+                    <span *ngIf="!interview.lienVisio" class="detail-empty">Aucun lien fourni</span>
+                </div>
+
+                <!-- Feedback recruteur — affiché seulement si rempli via PATCH /feedback -->
+                <div class="detail-item full-width" *ngIf="interview.feedbackRecruteur">
+                    <span class="detail-label">Feedback Recruteur</span>
+                    <div class="feedback-box">
+                        <div class="feedback-note" *ngIf="interview.noteRecruteur">
+                            <span *ngFor="let star of getStars(interview.noteRecruteur)"
+                                [class.filled]="star === '★'">{{ star }}</span>
+                            <span class="note-num">{{ interview.noteRecruteur }}/10</span>
+                        </div>
+                        <p class="feedback-text">{{ interview.feedbackRecruteur }}</p>
+                    </div>
+                </div>
+
+                <!-- Placeholder si pas encore de feedback -->
+                <div class="detail-item full-width" *ngIf="!interview.feedbackRecruteur">
+                    <span class="detail-label">Feedback Recruteur</span>
+                    <div class="feedback-placeholder">
+                        <span>💬 Aucun feedback pour le moment</span>
+                        <button class="btn-add-feedback" (click)="showFeedbackModal = true">
+                            + Ajouter Feedback
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </app-recruitment-card>
+
+    </div>
+
+    <!-- Modal feedback PATCH /{id}/feedback -->
+    <div class="modal-overlay" *ngIf="showFeedbackModal" (click)="cancelFeedback()">
+        <div class="modal" (click)="$event.stopPropagation()">
+            <h3 class="modal-title">💬 Feedback Recruteur</h3>
+            <p class="modal-subtitle">Évaluation de l'entretien — PATCH /interviews/{{ interview?.id }}/feedback</p>
+
+            <div class="note-selector">
+                <label class="detail-label">Note /10</label>
+                <div class="stars-row">
+                    <button *ngFor="let n of [1,2,3,4,5,6,7,8,9,10]" class="star-btn"
+                        [class.selected]="n <= feedbackNote" (click)="feedbackNote = n">{{ n <= feedbackNote ? '★' : '☆'
+                            }}</button>
+                            <span class="note-val">{{ feedbackNote }}/10</span>
+                </div>
+            </div>
+
+            <label class="detail-label" style="margin-top: 14px; display: block;">Commentaire *</label>
+            <textarea class="modal-textarea" [(ngModel)]="feedbackText"
+                placeholder="Ex: Candidat très motivé, bonne maîtrise technique..." rows="4"></textarea>
+
+            <div class="modal-actions">
+                <button class="btn btn-outline" (click)="cancelFeedback()">Annuler</button>
+                <app-button-primary icon="✅" [disabled]="!feedbackText.trim()" (onClick)="submitFeedback()">
+                    Enregistrer Feedback
+                </app-button-primary>
+            </div>
+        </div>
+    </div>
+
+    <div *ngIf="!loading && !interview" class="not-found">
+        <span>Entretien introuvable.</span>
+        <button class="btn btn-outline" (click)="goBack()">Retour</button>
+    </div>
+
+</div>

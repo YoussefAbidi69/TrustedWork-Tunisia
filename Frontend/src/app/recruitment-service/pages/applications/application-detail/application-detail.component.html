@@ -1,0 +1,109 @@
+<div class="page animate-fade-in">
+
+    <div class="loading-state" *ngIf="loading">
+        <div class="spinner"></div>
+        <span>Chargement...</span>
+    </div>
+
+    <div *ngIf="!loading && application">
+
+        <div class="page-header">
+            <button class="btn btn-outline btn-sm" (click)="goBack()">← Retour</button>
+            <div class="header-actions">
+                <!-- PATCH status dropdown -->
+                <div class="status-dropdown-wrap">
+                    <button class="btn btn-outline btn-sm" (click)="toggleStatusMenu()" [class.loading]="statusLoading">
+                        🔄 Changer Statut
+                    </button>
+                    <div class="status-menu" *ngIf="showStatusMenu">
+                        <button *ngFor="let s of statusOptions" class="status-option"
+                            [class.active]="s === application.status" (click)="requestChangeStatus(s)">
+                            {{ s }}
+                        </button>
+                    </div>
+                </div>
+                <button class="btn btn-outline btn-sm" (click)="onEdit()">✏️ Modifier</button>
+                <button class="btn btn-danger btn-sm" (click)="onDelete()">🗑 Supprimer</button>
+            </div>
+        </div>
+
+        <!-- Score banner -->
+        <div class="score-banner">
+            <div class="score-circle" [style.border-color]="getScoreColor(application.matchingScore)">
+                <span class="score-number" [style.color]="getScoreColor(application.matchingScore)">
+                    {{ application.matchingScore }}
+                </span>
+                <span class="score-unit">%</span>
+            </div>
+            <div class="score-info">
+                <p class="score-label">XAI Matching Score</p>
+                <app-status-badge [status]="application.status || 'SUBMITTED'"></app-status-badge>
+            </div>
+            <div class="score-meta">
+                <span class="meta-chip">📋 Job #{{ application.jobPositionId }}</span>
+                <span class="meta-chip" *ngIf="application.jobPositionTitre">{{ application.jobPositionTitre }}</span>
+                <span class="meta-chip">👤 Freelancer #{{ application.freelancerId }}</span>
+                <span class="meta-chip">🏢 Entreprise #{{ application.entrepriseId }}</span>
+            </div>
+        </div>
+
+        <app-recruitment-card title="Détails de la Candidature" icon="📋">
+            <div class="detail-grid">
+
+                <div class="detail-item">
+                    <span class="detail-label">Prétention Salariale</span>
+                    <span class="detail-value text-primary">{{ application.pretentionSalariale | number:'1.0-0' }}
+                        TND</span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Disponibilité</span>
+                    <span class="detail-value">{{ application.disponibilite }}</span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Date de Candidature</span>
+                    <span class="detail-value">{{ application.datePostulation | date:'longDate' }}</span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Dernière Mise à Jour</span>
+                    <span class="detail-value">{{ application.updatedAt | date:'longDate' }}</span>
+                </div>
+
+                <!-- Motif rejet si REJECTED -->
+                <div class="detail-item full-width" *ngIf="application.status === 'REJECTED' && application.motifRejet">
+                    <span class="detail-label">Motif de Rejet</span>
+                    <div class="reject-box">{{ application.motifRejet }}</div>
+                </div>
+
+                <div class="detail-item full-width">
+                    <span class="detail-label">Lettre de Motivation</span>
+                    <p class="detail-description">{{ application.lettreMotivation }}</p>
+                </div>
+
+            </div>
+        </app-recruitment-card>
+
+    </div>
+
+    <!-- Modal motif rejet -->
+    <div class="modal-overlay" *ngIf="showRejectModal" (click)="cancelReject()">
+        <div class="modal" (click)="$event.stopPropagation()">
+            <h3 class="modal-title">❌ Motif de Rejet</h3>
+            <p class="modal-subtitle">Expliquez pourquoi cette candidature est rejetée (optionnel)</p>
+            <textarea class="modal-textarea" [(ngModel)]="motifRejet"
+                placeholder="Ex: Profil ne correspond pas aux compétences requises..." rows="4"></textarea>
+            <div class="modal-actions">
+                <button class="btn btn-outline" (click)="cancelReject()">Annuler</button>
+                <button class="btn btn-danger" (click)="confirmReject()">Confirmer le Rejet</button>
+            </div>
+        </div>
+    </div>
+
+    <div *ngIf="!loading && !application" class="not-found">
+        <span>Candidature introuvable.</span>
+        <button class="btn btn-outline" (click)="goBack()">Retour</button>
+    </div>
+
+</div>

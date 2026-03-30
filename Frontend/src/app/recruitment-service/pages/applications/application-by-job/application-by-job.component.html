@@ -1,0 +1,26 @@
+<div class="page animate-fade-in">
+    <app-recruitment-card title="Candidatures par Poste" subtitle="Chercher par Job Position ID" icon="🔎"
+        [padding]="false">
+
+        <div class="search-bar">
+            <input type="number" class="search-input" [(ngModel)]="jobPositionId"
+                placeholder="Entrer Job Position ID..." min="1" (keydown.enter)="search()" />
+            <label class="ranked-toggle">
+                <input type="checkbox" [(ngModel)]="ranked" />
+                <span>Classées par score (ranked)</span>
+            </label>
+            <app-button-primary icon="🔍" (onClick)="search()" [loading]="loading">
+                Rechercher
+            </app-button-primary>
+        </div>
+
+        <div class="empty-state" *ngIf="!loading && applications.length === 0 && jobPositionId">
+            <span>Aucune candidature trouvée pour le poste #{{ jobPositionId }}</span>
+        </div>
+
+        <app-recruitment-table *ngIf="applications.length > 0" [columns]="columns" [data]="applications"
+            [loading]="loading" (onView)="onView($event)">
+        </app-recruitment-table>
+
+    </app-recruitment-card>
+</div>

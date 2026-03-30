@@ -1,0 +1,7 @@
+<div class="page animate-fade-in">
+    <app-recruitment-card title="Job Positions" subtitle="Manage all open positions" icon="💼" [padding]="false">
+
+        <app-recruitment-table [columns]="columns" [data]="jobPositions" [loading]="loading"
+            (onView)="onView($event)"></app-recruitment-table>
+    </app-recruitment-card>
+</div>
