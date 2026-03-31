@@ -18,18 +18,24 @@ public class Reclamation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long reviewId;
+    @ManyToOne
+    @JoinColumn(name = "review_id", nullable = false)
+    private Review review;
 
+    @Column(nullable = false)
     private Long reportedByUserId;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private MotifReclamation motif;
 
     private String description;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private StatusReclamation status;
 
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     private LocalDateTime resolvedAt;

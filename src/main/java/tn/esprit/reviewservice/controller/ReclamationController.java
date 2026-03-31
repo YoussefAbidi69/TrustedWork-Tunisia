@@ -13,34 +13,34 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/reclamations")
 @RequiredArgsConstructor
-@CrossOrigin("*")
+@CrossOrigin(origins = "*")
 public class ReclamationController {
 
-    private final IReclamationService service;
+    private final IReclamationService reclamationService;
 
     @PostMapping
-    public ResponseEntity<ReclamationResponse> create(@Valid @RequestBody ReclamationRequest request) {
-        return ResponseEntity.ok(service.createReclamation(request));
+    public ResponseEntity<ReclamationResponse> createReclamation(@Valid @RequestBody ReclamationRequest request) {
+        return ResponseEntity.ok(reclamationService.createReclamation(request));
     }
 
     @GetMapping
-    public ResponseEntity<List<ReclamationResponse>> getAll() {
-        return ResponseEntity.ok(service.getAllReclamations());
+    public ResponseEntity<List<ReclamationResponse>> getAllReclamations() {
+        return ResponseEntity.ok(reclamationService.getAllReclamations());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ReclamationResponse> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(service.getReclamationById(id));
+    public ResponseEntity<ReclamationResponse> getReclamationById(@PathVariable Long id) {
+        return ResponseEntity.ok(reclamationService.getReclamationById(id));
     }
 
     @PutMapping("/{id}/resolve")
-    public ResponseEntity<ReclamationResponse> resolve(@PathVariable Long id) {
-        return ResponseEntity.ok(service.resolveReclamation(id));
+    public ResponseEntity<ReclamationResponse> resolveReclamation(@PathVariable Long id) {
+        return ResponseEntity.ok(reclamationService.resolveReclamation(id));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        service.deleteReclamation(id);
+    public ResponseEntity<Void> deleteReclamation(@PathVariable Long id) {
+        reclamationService.deleteReclamation(id);
         return ResponseEntity.noContent().build();
     }
 }

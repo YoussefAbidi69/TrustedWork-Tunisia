@@ -9,13 +9,13 @@ import tn.esprit.reviewservice.entity.enums.MotifReclamation;
 @Setter
 public class ReclamationRequest {
 
-    @NotNull
+    @NotNull(message = "reviewId est obligatoire")
     private Long reviewId;
 
-    @NotNull
+    @NotNull(message = "reportedByUserId est obligatoire")
     private Long reportedByUserId;
 
-    @NotNull
+    @NotNull(message = "motif est obligatoire")
     private MotifReclamation motif;
 
     private String description;

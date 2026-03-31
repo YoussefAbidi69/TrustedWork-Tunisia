@@ -9,24 +9,23 @@ import tn.esprit.reviewservice.entity.Reclamation;
 public class ReclamationMapper {
 
     public Reclamation toEntity(ReclamationRequest request) {
-        Reclamation r = new Reclamation();
-        r.setReviewId(request.getReviewId());
-        r.setReportedByUserId(request.getReportedByUserId());
-        r.setMotif(request.getMotif());
-        r.setDescription(request.getDescription());
-        return r;
+        Reclamation reclamation = new Reclamation();
+        reclamation.setReportedByUserId(request.getReportedByUserId());
+        reclamation.setMotif(request.getMotif());
+        reclamation.setDescription(request.getDescription());
+        return reclamation;
     }
 
-    public ReclamationResponse toResponse(Reclamation r) {
+    public ReclamationResponse toResponse(Reclamation reclamation) {
         return ReclamationResponse.builder()
-                .id(r.getId())
-                .reviewId(r.getReviewId())
-                .reportedByUserId(r.getReportedByUserId())
-                .motif(r.getMotif())
-                .description(r.getDescription())
-                .status(r.getStatus())
-                .createdAt(r.getCreatedAt())
-                .resolvedAt(r.getResolvedAt())
+                .id(reclamation.getId())
+                .reviewId(reclamation.getReview() != null ? reclamation.getReview().getId() : null)
+                .reportedByUserId(reclamation.getReportedByUserId())
+                .motif(reclamation.getMotif())
+                .description(reclamation.getDescription())
+                .status(reclamation.getStatus())
+                .createdAt(reclamation.getCreatedAt())
+                .resolvedAt(reclamation.getResolvedAt())
                 .build();
     }
 }
