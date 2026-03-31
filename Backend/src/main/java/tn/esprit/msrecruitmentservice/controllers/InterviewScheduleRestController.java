@@ -71,4 +71,12 @@ public class InterviewScheduleRestController {
                                                             @RequestParam Integer note) {
         return ResponseEntity.ok(interviewService.addFeedback(id, feedback, note));
     }
+
+
+    @GetMapping("/status/{status}")
+    public ResponseEntity<List<InterviewScheduleDTO>> getByStatus(
+            @PathVariable InterviewStatus status) {
+
+        return ResponseEntity.ok(interviewService.getByStatus(status));
+    }
 }

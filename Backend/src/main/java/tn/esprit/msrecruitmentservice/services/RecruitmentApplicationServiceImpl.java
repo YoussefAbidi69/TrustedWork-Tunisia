@@ -94,4 +94,14 @@ public class RecruitmentApplicationServiceImpl implements IRecruitmentApplicatio
                 .map(mapper::toDTO)
                 .toList();
     }
+
+    @Override
+    public List<RecruitmentApplicationDTO> getApplicationsEligibleForOffer() {
+        List<RecruitmentApplication> apps =
+                applicationRepository.findApplicationsEligibleForOffer();
+
+        return apps.stream()
+                .map(mapper::toDTO)
+                .toList();
+    }
 }

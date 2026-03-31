@@ -15,7 +15,7 @@ export class JobPositionByEntrepriseComponent implements OnInit {
   loading = true;
 
   // Mock entrepriseId — Phase 2 : récupérer depuis AuthService ou token JWT
-  entrepriseId = 101;
+  entrepriseId = 2;
 
   // Filtres
   searchText = '';

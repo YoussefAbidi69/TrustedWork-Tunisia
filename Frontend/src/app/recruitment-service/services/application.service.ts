@@ -69,4 +69,8 @@ export class ApplicationService {
             { params }
         );
     }
+
+    getEligibleForOffer(): Observable<RecruitmentApplication[]> {
+        return this.http.get<RecruitmentApplication[]>(`${this.baseUrl}/eligible-offer`);
+    }
 }

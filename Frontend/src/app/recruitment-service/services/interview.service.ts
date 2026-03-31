@@ -50,4 +50,10 @@ export class InterviewService {
         const params = new HttpParams().set('feedback', feedback).set('note', note.toString());
         return this.http.patch<InterviewSchedule>(`${this.baseUrl}/${id}/feedback`, null, { params });
     }
+
+
+    // GET /interviews/status/{status}
+    getByStatus(status: string): Observable<InterviewSchedule[]> {
+        return this.http.get<InterviewSchedule[]>(`${this.baseUrl}/status/${status}`);
+    }
 }

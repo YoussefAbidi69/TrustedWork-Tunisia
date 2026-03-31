@@ -41,7 +41,7 @@ export class JobPositionCreateComponent implements OnInit {
             skillsRequis: [''],
             deadline: [''],
             status: ['DRAFT'],
-            entrepriseId: [101],
+            entrepriseId: [2],
             nombreCandidatures: [0]  // ← champ ajouté
         });
 

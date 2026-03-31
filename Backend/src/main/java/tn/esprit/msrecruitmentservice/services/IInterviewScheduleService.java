@@ -13,4 +13,6 @@ public interface IInterviewScheduleService {
     List<InterviewScheduleDTO> getByApplication(Long applicationId);
     InterviewScheduleDTO updateStatus(Long id, InterviewStatus status);
     InterviewScheduleDTO addFeedback(Long id, String feedback, Integer note);
-}
+
+
+    List<InterviewScheduleDTO> getByStatus(InterviewStatus status);}

@@ -23,4 +23,6 @@ public interface IInterviewScheduleRepository
     @Transactional
     @Query("UPDATE InterviewSchedule i SET i.status = :status WHERE i.id = :id")
     void updateStatus(@Param("id") Long id, @Param("status") InterviewStatus status);
+
+
 }

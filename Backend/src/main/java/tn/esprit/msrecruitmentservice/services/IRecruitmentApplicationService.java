@@ -18,4 +18,6 @@ public interface IRecruitmentApplicationService {
 
     List<RecruitmentApplicationDTO> getByStatuses(List<ApplicationStatus> statuses);
 
-}
+     List<RecruitmentApplicationDTO> getApplicationsEligibleForOffer() ;
+
+    }

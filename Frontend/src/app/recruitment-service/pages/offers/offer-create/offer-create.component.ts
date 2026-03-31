@@ -2,6 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { OfferService } from '../../../services/offer.service';
+import { InterviewService } from '../../../services/interview.service';
+import { InterviewSchedule } from '../../../models';
+
 import { ApplicationService } from '../../../services/application.service';
 import { RecruitmentApplication } from '../../../models';
 @Component({
@@ -14,6 +17,7 @@ export class OfferCreateComponent implements OnInit {
   loading = false;
   isEdit = false;
   editId: number | null = null;
+  interviews: InterviewSchedule[] = [];
   applications: RecruitmentApplication[] = [];
   statusOptions = ['SENT', 'ACCEPTED', 'DECLINED', 'NEGOTIATING'];
 
@@ -26,11 +30,13 @@ export class OfferCreateComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+
     this.applicationService
-      .getByStatuses(['SHORTLISTED', 'INTERVIEW'])
+      .getEligibleForOffer()
       .subscribe({
         next: (data) => {
           this.applications = data;
+          console.log(this.applications);
         }
       });
     this.form = this.fb.group({

@@ -26,4 +26,11 @@ public interface IRecruitmentApplicationRepository
 
 
     List<RecruitmentApplication> findByStatusIn(List<ApplicationStatus> statuses);
+
+    @Query("""
+SELECT a FROM RecruitmentApplication a
+JOIN InterviewSchedule i ON i.application.id = a.id
+WHERE i.status = tn.esprit.msrecruitmentservice.entities.InterviewStatus.COMPLETED
+""")
+    List<RecruitmentApplication> findApplicationsEligibleForOffer();
 }

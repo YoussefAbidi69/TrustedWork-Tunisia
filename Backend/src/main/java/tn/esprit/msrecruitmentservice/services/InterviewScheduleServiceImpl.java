@@ -85,4 +85,12 @@ public class InterviewScheduleServiceImpl implements IInterviewScheduleService {
         existing.setStatus(InterviewStatus.COMPLETED);
         return mapper.toDTO(interviewRepository.save(existing));
     }
+
+    @Override
+    public List<InterviewScheduleDTO> getByStatus(InterviewStatus status) {
+        return interviewRepository.findByStatus(status)
+                .stream()
+                .map(mapper::toDTO)
+                .collect(Collectors.toList());
+    }
 }

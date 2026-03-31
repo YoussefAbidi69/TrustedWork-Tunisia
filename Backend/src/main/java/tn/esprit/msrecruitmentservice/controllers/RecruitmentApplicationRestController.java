@@ -84,4 +84,9 @@ public class RecruitmentApplicationRestController {
 
         return ResponseEntity.ok(applicationService.getByStatuses(statuses));
     }
+
+    @GetMapping("/eligible-offer")
+    public List<RecruitmentApplicationDTO> getEligibleForOffer() {
+        return applicationService.getApplicationsEligibleForOffer();
+    }
 }
