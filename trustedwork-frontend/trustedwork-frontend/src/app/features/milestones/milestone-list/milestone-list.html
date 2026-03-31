@@ -31,7 +31,7 @@
                 <th>Montant</th>
                 <th>Deadline</th>
                 <th>Statut</th>
-                <th>Actions</th>
+                <th *ngIf="isAdmin">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -52,9 +52,9 @@
                     {{ milestone.status }}
                   </span>
                 </td>
-                <td class="table-actions">
+                <td class="table-actions" *ngIf="isAdmin">
                   <div class="d-flex flex-wrap gap-2">
-                    <a *ngIf="!isFreelancer" [routerLink]="['/milestones', milestone.id]" class="btn btn-sm btn-outline-info rounded-pill px-3">
+                    <a [routerLink]="['/milestones', milestone.id]" class="btn btn-sm btn-outline-info rounded-pill px-3">
                       <i class="bi bi-eye me-1"></i> Détails
                     </a>
                     
@@ -79,7 +79,7 @@
                     <button *ngIf="(isClient || isAdmin) && milestone.status === 'SUBMITTED'" 
                             (click)="rejectMilestone(milestone.id!)" 
                             class="btn btn-sm btn-danger rounded-pill px-3">
-                      <i class="bi bi-x-circle me-1"></i> Rejeter
+                      <i class="bi bi-x-circle-fill me-1"></i> Rejeter
                     </button>
   
                     <button *ngIf="isClient || isAdmin" 

@@ -56,7 +56,7 @@ public class ContractController {
     @Operation(summary = "Test endpoint")
     public ResponseEntity<Map<String, String>> test() {
         Map<String, String> response = new HashMap<>();
-        response.put("message", "✅ ms-contract-service is running!");
+        response.put("message", " ms-contract-service is running!");
         response.put("status", "OK");
         return ResponseEntity.ok(response);
     }

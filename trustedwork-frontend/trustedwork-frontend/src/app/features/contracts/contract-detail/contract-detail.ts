@@ -1,18 +1,19 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { ContractService } from '../../../core/services/contract.service';
 import { MilestoneService } from '../../../core/services/milestone.service';
 import { Contract } from '../../../core/models/contract.model';
 import { Milestone } from '../../../core/models/milestone.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { Router } from '@angular/router';
+import { DeliveryProofResponse } from '../../../core/models/delivery-proof.model';
 
 @Component({
   selector: 'app-contract-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
+  imports: [CommonModule, RouterLink, FormsModule, ReactiveFormsModule],
   templateUrl: './contract-detail.html',
   styleUrl: './contract-detail.css'
 })
@@ -29,13 +30,31 @@ export class ContractDetailComponent implements OnInit {
   selectedMilestoneId: number | null = null;
   minDate = new Date().toISOString().split('T')[0];
 
+  // Submission Modal State (with Proof)
+  showSubmitModal = false;
+  submissionForm: FormGroup;
+  submittingMilestoneId: number | null = null;
+  
+  // Storage for proofs
+  deliveryProofs: {[key: number]: DeliveryProofResponse | null} = {};
+  proofLoading: {[key: number]: boolean} = {};
+
   constructor(
     private route: ActivatedRoute,
     private contractService: ContractService,
     private milestoneService: MilestoneService,
     public authService: AuthService,
-    private router: Router
-  ) {}
+    private router: Router,
+    private fb: FormBuilder
+  ) {
+    this.submissionForm = this.fb.group({
+      fichiers: [''],
+      lienDemo: [''],
+      repoGit: [''],
+      commentaire: [''],
+      hashMD5: [''],
+    });
+  }
 
   get isClient(): boolean {
     return this.authService.getRole() === 'CLIENT';
@@ -76,9 +95,29 @@ export class ContractDetailComponent implements OnInit {
     this.milestoneService.getByContractId(contractId).subscribe({
       next: (milestones) => {
         this.milestones = milestones;
+        // Load proofs for submitted/approved/rejected milestones
+        this.milestones.forEach(m => {
+          if (['SUBMITTED', 'APPROVED', 'REJECTED'].includes(m.status)) {
+            this.loadDeliveryProof(m.id!);
+          }
+        });
       },
       error: (err) => {
         console.error('Erreur chargement jalons:', err);
+      }
+    });
+  }
+
+  loadDeliveryProof(milestoneId: number): void {
+    this.proofLoading[milestoneId] = true;
+    this.milestoneService.getDeliveryProof(milestoneId).subscribe({
+      next: (proof) => {
+        this.deliveryProofs[milestoneId] = proof;
+        this.proofLoading[milestoneId] = false;
+      },
+      error: () => {
+        this.deliveryProofs[milestoneId] = null;
+        this.proofLoading[milestoneId] = false;
       }
     });
   }
@@ -127,10 +166,28 @@ export class ContractDetailComponent implements OnInit {
   }
 
   submitMilestone(id: number): void {
-    if (confirm('Voulez-vous soumettre ce jalon pour validation ?')) {
-      this.milestoneService.submit(id).subscribe({
-        next: () => this.loadMilestones(this.contract!.id!),
-        error: (err) => console.error(err)
+    this.submittingMilestoneId = id;
+    this.submissionForm.reset();
+    this.showSubmitModal = true;
+  }
+
+  closeSubmitModal(): void {
+    this.showSubmitModal = false;
+    this.submittingMilestoneId = null;
+  }
+
+  confirmSubmitWithProof(): void {
+    if (this.submittingMilestoneId) {
+      const payload = this.submissionForm.value;
+      this.milestoneService.submit(this.submittingMilestoneId, payload).subscribe({
+        next: () => {
+          this.loadMilestones(this.contract!.id!);
+          this.closeSubmitModal();
+        },
+        error: (err) => {
+          this.error = err?.error?.message ?? 'Submit failed';
+          console.error(err);
+        }
       });
     }
   }
@@ -139,7 +196,14 @@ export class ContractDetailComponent implements OnInit {
     if (confirm('Voulez-vous approuver ce jalon ?')) {
       this.milestoneService.approve(id).subscribe({
         next: () => this.loadMilestones(this.contract!.id!),
-        error: (err) => console.error(err)
+        error: (err) => {
+          if (err.status === 400 && err.error?.message?.includes('proof')) {
+            alert("L'approbation nécessite une preuve de livraison (Delivery Proof). Veuillez demander au freelancer de la soumettre.");
+          } else {
+            console.error(err);
+            alert("Erreur lors de l'approbation: " + (err.error?.message || 'Inconnue'));
+          }
+        }
       });
     }
   }

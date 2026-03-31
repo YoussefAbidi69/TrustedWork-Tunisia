@@ -74,7 +74,7 @@
                             <th>Montant</th>
                             <th>Date limite</th>
                             <th>Statut</th>
-                            <th>Actions</th>
+                            <th *ngIf="isAdmin">Actions</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -84,7 +84,7 @@
                             <td>{{ m.montant }} DT</td>
                             <td>{{ m.deadline | date:'dd/MM/yyyy' }}</td>
                             <td><span [class]="getStatusClass(m.status)">{{ m.status }}</span></td>
-                            <td>
+                            <td *ngIf="isAdmin">
                               <button *ngIf="isFreelancer && m.status === 'PENDING'" (click)="startMilestone(contract.id!, m.id!)" class="btn btn-xs btn-primary me-1">Démarrer</button>
                               <button *ngIf="isFreelancer && (m.status === 'IN_PROGRESS' || m.status === 'STARTED')" (click)="submitMilestone(contract.id!, m.id!)" class="btn btn-xs btn-success me-1">Soumettre</button>
                               <button *ngIf="(isClient || isAdmin) && m.status === 'SUBMITTED'" (click)="approveMilestone(contract.id!, m.id!)" class="btn btn-xs btn-success me-1">Approuver</button>

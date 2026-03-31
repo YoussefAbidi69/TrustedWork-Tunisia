@@ -1,5 +1,6 @@
 package tn.esprit.mscontractservicee.service;
 
+import tn.esprit.mscontractservicee.dto.DeliveryProofSubmitRequest;
 import tn.esprit.mscontractservicee.entity.Milestone;
 import tn.esprit.mscontractservicee.enums.MilestoneStatus;
 import org.springframework.data.domain.Page;
@@ -26,9 +27,14 @@ public interface IMilestoneService {
 
     Milestone submitMilestone(Long id);
 
-    Milestone approveMilestone(Long id);
+    /**
+     * Submit milestone with its delivery proof (atomic / transactional).
+     */
+    Milestone submitMilestoneWithProof(Long id, DeliveryProofSubmitRequest proof);
 
-    Milestone autoApproveMilestone(Long id);
+    Milestone approveMilestone(Long id, Long approvedBy);
+
+    Milestone autoApproveMilestone(Long id, Long approvedBy);
 
     void deleteMilestone(Long id);
 

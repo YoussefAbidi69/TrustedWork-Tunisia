@@ -3,6 +3,7 @@ package tn.esprit.mscontractservicee.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -11,12 +12,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import tn.esprit.mscontractservicee.dto.DeliveryProofResponse;
+import tn.esprit.mscontractservicee.dto.DeliveryProofSubmitRequest;
 import tn.esprit.mscontractservicee.dto.UserDTO;
 import tn.esprit.mscontractservicee.entity.Contract;
 import tn.esprit.mscontractservicee.entity.Milestone;
 import tn.esprit.mscontractservicee.enums.ContractStatus;
 import tn.esprit.mscontractservicee.enums.MilestoneStatus;
 import tn.esprit.mscontractservicee.service.IContractService;
+import tn.esprit.mscontractservicee.service.IDeliveryProofService;
 import tn.esprit.mscontractservicee.service.IMilestoneService;
 
 import java.time.LocalDate;
@@ -32,6 +36,13 @@ public class MilestoneController {
 
     private final IMilestoneService milestoneService;
     private final IContractService contractService;
+    private final IDeliveryProofService deliveryProofService;
+
+    @Value("${milestone.submission.requireDeliveryProof:false}")
+    private boolean requireDeliveryProofOnSubmit;
+
+    @Value("${milestone.approval.requireDeliveryProof:false}")
+    private boolean requireDeliveryProofOnApprove;
 
     private static boolean isAdmin(UserDTO user) {
         return user != null && "ADMIN".equals(user.getRole());
@@ -110,6 +121,27 @@ public class MilestoneController {
         }
 
         return ResponseEntity.ok(milestone);
+    }
+
+    @GetMapping("/{id}/delivery-proof")
+    @Operation(summary = "Recuperer la preuve de livraison (DeliveryProof) d'un jalon")
+    public ResponseEntity<DeliveryProofResponse> getDeliveryProofForMilestone(
+            @RequestHeader(value = "Authorization", required = false) String token,
+            @PathVariable Long id) {
+        UserDTO currentUser = contractService.getAuthenticatedUser(token);
+        Milestone milestone = milestoneService.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Milestone not found with id: " + id));
+
+        Contract contract = requireContract(milestone.getContractId());
+        if (!isContractParticipant(contract, currentUser)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not allowed to access this delivery proof");
+        }
+
+        return deliveryProofService.findForMilestone(id)
+                .map(ResponseEntity::ok)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "DeliveryProof not found for milestone id: " + id));
     }
 
     @GetMapping
@@ -208,10 +240,11 @@ public class MilestoneController {
     }
 
     @PostMapping("/{id}/submit")
-    @Operation(summary = "Soumettre un jalon (livraison)")
+    @Operation(summary = "Soumettre un jalon (et optionnellement sa preuve de livraison)")
     public ResponseEntity<Milestone> submitMilestone(
             @RequestHeader(value = "Authorization", required = false) String token,
-            @PathVariable Long id) {
+            @PathVariable Long id,
+            @RequestBody(required = false) DeliveryProofSubmitRequest deliveryProof) {
         UserDTO currentUser = contractService.getAuthenticatedUser(token);
         if (!isAdmin(currentUser) && !"FREELANCER".equals(currentUser.getRole())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only FREELANCER or ADMIN can submit milestones");
@@ -229,7 +262,14 @@ public class MilestoneController {
                     "You are not allowed to submit milestones for this contract");
         }
 
-        return ResponseEntity.ok(milestoneService.submitMilestone(id));
+        if (deliveryProof == null) {
+            if (requireDeliveryProofOnSubmit) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "deliveryProof payload is required");
+            }
+            return ResponseEntity.ok(milestoneService.submitMilestone(id));
+        }
+
+        return ResponseEntity.ok(milestoneService.submitMilestoneWithProof(id, deliveryProof));
     }
 
     @PostMapping("/{id}/approve")
@@ -254,7 +294,11 @@ public class MilestoneController {
                     "You are not allowed to approve milestones for this contract");
         }
 
-        return ResponseEntity.ok(milestoneService.approveMilestone(id));
+        if (requireDeliveryProofOnApprove && deliveryProofService.findForMilestone(id).isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "DeliveryProof is required before approval");
+        }
+
+        return ResponseEntity.ok(milestoneService.approveMilestone(id, currentUser.getId()));
     }
 
     @PostMapping("/{id}/reject")
@@ -322,7 +366,10 @@ public class MilestoneController {
         if (!isAdmin(currentUser)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Admin only");
         }
-        return ResponseEntity.ok(milestoneService.autoApproveMilestone(id));
+        if (requireDeliveryProofOnApprove && deliveryProofService.findForMilestone(id).isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "DeliveryProof is required before approval");
+        }
+        return ResponseEntity.ok(milestoneService.autoApproveMilestone(id, currentUser.getId()));
     }
 
     @DeleteMapping("/{id}")

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
 import { Milestone } from '../models/milestone.model';
+import { DeliveryProofResponse, DeliveryProofSubmitRequest } from '../models/delivery-proof.model';
 
 @Injectable({
   providedIn: 'root'
@@ -40,8 +41,12 @@ export class MilestoneService {
     return this.api.post<Milestone>(`${this.endpoint}/${id}/start`, {});
   }
 
-  submit(id: number): Observable<Milestone> {
-    return this.api.post<Milestone>(`${this.endpoint}/${id}/submit`, {});
+  submit(id: number, proof?: DeliveryProofSubmitRequest): Observable<Milestone> {
+    return this.api.post<Milestone>(`${this.endpoint}/${id}/submit`, proof ?? {});
+  }
+
+  getDeliveryProof(id: number): Observable<DeliveryProofResponse> {
+    return this.api.get<DeliveryProofResponse>(`${this.endpoint}/${id}/delivery-proof`);
   }
 
   approve(id: number): Observable<Milestone> {

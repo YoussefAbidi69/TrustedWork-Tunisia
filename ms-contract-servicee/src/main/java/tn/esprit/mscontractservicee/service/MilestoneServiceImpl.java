@@ -8,8 +8,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import tn.esprit.mscontractservicee.dto.DeliveryProofSubmitRequest;
+import tn.esprit.mscontractservicee.entity.DeliveryProof;
 import tn.esprit.mscontractservicee.entity.Milestone;
+import tn.esprit.mscontractservicee.enums.DeliveryStatus;
 import tn.esprit.mscontractservicee.enums.MilestoneStatus;
+import tn.esprit.mscontractservicee.repository.DeliveryProofRepository;
 import tn.esprit.mscontractservicee.repository.MilestoneRepository;
 
 import java.time.LocalDate;
@@ -24,6 +28,7 @@ import java.util.Optional;
 public class MilestoneServiceImpl implements IMilestoneService {
 
     private final MilestoneRepository milestoneRepository;
+    private final DeliveryProofRepository deliveryProofRepository;
     private final IPaymentService paymentService;
 
     @Override
@@ -117,7 +122,46 @@ public class MilestoneServiceImpl implements IMilestoneService {
     }
 
     @Override
-    public Milestone approveMilestone(Long id) {
+    public Milestone submitMilestoneWithProof(Long id, DeliveryProofSubmitRequest proof) {
+        if (proof == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "deliveryProof payload is required");
+        }
+
+        log.info("Submitting milestone with delivery proof: {}", id);
+        Milestone milestone = milestoneRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Milestone not found with id: " + id));
+
+        if (milestone.getStatus() != MilestoneStatus.IN_PROGRESS && milestone.getStatus() != MilestoneStatus.REJECTED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Milestone cannot be submitted. Current status: " + milestone.getStatus());
+        }
+
+        DeliveryProof deliveryProof = deliveryProofRepository.findByMilestoneId(id)
+                .orElseGet(() -> DeliveryProof.builder().milestoneId(id).build());
+
+        deliveryProof.setFichiers(proof.fichiers());
+        deliveryProof.setLienDemo(proof.lienDemo());
+        deliveryProof.setRepoGit(proof.repoGit());
+        deliveryProof.setCommentaire(proof.commentaire());
+        deliveryProof.setHashMD5(proof.hashMD5());
+        deliveryProof.setSubmittedAt(LocalDateTime.now());
+        deliveryProof.setStatus(DeliveryStatus.SUBMITTED);
+        deliveryProof.setApprovedAt(null);
+        deliveryProof.setApprovedBy(null);
+        deliveryProofRepository.save(deliveryProof);
+
+        milestone.setStatus(MilestoneStatus.SUBMITTED);
+        milestone.setSubmittedAt(LocalDateTime.now());
+        // New submission supersedes any previous validation decision.
+        milestone.setValidatedAt(null);
+        milestone.setRejectionReason(null);
+
+        return milestoneRepository.save(milestone);
+    }
+
+    @Override
+    public Milestone approveMilestone(Long id, Long approvedBy) {
         log.info("Approving milestone: {}", id);
         Milestone milestone = milestoneRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
@@ -131,6 +175,13 @@ public class MilestoneServiceImpl implements IMilestoneService {
         milestone.setStatus(MilestoneStatus.APPROVED);
         milestone.setValidatedAt(LocalDateTime.now());
 
+        deliveryProofRepository.findByMilestoneId(id).ifPresent(proof -> {
+            proof.setStatus(DeliveryStatus.APPROVED);
+            proof.setApprovedAt(LocalDateTime.now());
+            proof.setApprovedBy(approvedBy);
+            deliveryProofRepository.save(proof);
+        });
+
         Milestone saved = milestoneRepository.save(milestone);
         try {
             paymentService.releaseApprovedMilestone(saved.getId());
@@ -141,7 +192,7 @@ public class MilestoneServiceImpl implements IMilestoneService {
     }
 
     @Override
-    public Milestone autoApproveMilestone(Long id) {
+    public Milestone autoApproveMilestone(Long id, Long approvedBy) {
         log.info("Auto-approving milestone: {}", id);
         Milestone milestone = milestoneRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
@@ -154,6 +205,13 @@ public class MilestoneServiceImpl implements IMilestoneService {
 
         milestone.setStatus(MilestoneStatus.AUTO_APPROVED);
         milestone.setValidatedAt(LocalDateTime.now());
+
+        deliveryProofRepository.findByMilestoneId(id).ifPresent(proof -> {
+            proof.setStatus(DeliveryStatus.APPROVED);
+            proof.setApprovedAt(LocalDateTime.now());
+            proof.setApprovedBy(approvedBy);
+            deliveryProofRepository.save(proof);
+        });
 
         Milestone saved = milestoneRepository.save(milestone);
         try {
@@ -196,6 +254,13 @@ public class MilestoneServiceImpl implements IMilestoneService {
         if (newDeadline != null) {
             milestone.setDeadline(newDeadline);
         }
+
+        deliveryProofRepository.findByMilestoneId(id).ifPresent(proof -> {
+            proof.setStatus(DeliveryStatus.REJECTED);
+            proof.setApprovedAt(null);
+            proof.setApprovedBy(null);
+            deliveryProofRepository.save(proof);
+        });
 
         return milestoneRepository.save(milestone);
     }
