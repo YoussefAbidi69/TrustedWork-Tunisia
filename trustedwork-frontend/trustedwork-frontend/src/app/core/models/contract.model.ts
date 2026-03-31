@@ -5,7 +5,7 @@ export interface Contract {
   freelancerId: number;
   clientWalletId: number;
   freelancerWalletId: number;
-  projectId: number;
+  projectId: number | null;
   projectTitle: string;
   description: string;
   montantTotal: number;

@@ -83,8 +83,10 @@
       </div>
     </div>
 
-    <!-- Stripe Section -->
-    <div class="stripe-connect-card d-flex flex-column flex-md-row justify-content-between align-items-center animate-fade-in-up" style="animation-delay: 0.4s;">
+    <!-- Stripe Section (Freelancer/Admin Only) -->
+    <div *ngIf="authService.getRole() !== 'CLIENT'" 
+         class="stripe-connect-card d-flex flex-column flex-md-row justify-content-between align-items-center animate-fade-in-up" 
+         style="animation-delay: 0.4s;">
       <div class="d-flex align-items-start gap-4 mb-4 mb-md-0">
         <div class="bg-white p-3 rounded-4 shadow-sm border">
           <img src="https://stripe.com/favicon.ico" alt="Stripe" width="32">

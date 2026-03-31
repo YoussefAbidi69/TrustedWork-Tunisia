@@ -5,10 +5,10 @@ export interface Milestone {
     titre: string;
     description: string;
     montant: number;
-    deadline: Date | string;
-    startedAt?: Date | string;
-    submittedAt?: Date | string;
-    validatedAt?: Date | string;
+    deadline: Date | string | null;
+    startedAt?: Date | string | null;
+    submittedAt?: Date | string | null;
+    validatedAt?: Date | string | null;
     status: string;
     rejectionReason?: string;
 }

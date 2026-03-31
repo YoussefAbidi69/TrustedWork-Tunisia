@@ -14,7 +14,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class PaymentController {
 
-    private final IPaymentService paymentService;  // ✅ Interface
+    private final IPaymentService paymentService;  //  Interface
 
     @PostMapping("/create-intent")
     public ResponseEntity<?> createPaymentIntent(

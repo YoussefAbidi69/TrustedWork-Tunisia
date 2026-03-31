@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +19,7 @@ import tn.esprit.mscontractservicee.enums.MilestoneStatus;
 import tn.esprit.mscontractservicee.service.IContractService;
 import tn.esprit.mscontractservicee.service.IMilestoneService;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -256,11 +258,13 @@ public class MilestoneController {
     }
 
     @PostMapping("/{id}/reject")
-    @Operation(summary = "Rejeter un jalon avec une raison")
+    @Operation(summary = "Rejeter un jalon avec une raison (et une nouvelle deadline optionnelle)")
     public ResponseEntity<Milestone> rejectMilestone(
             @RequestHeader(value = "Authorization", required = false) String token,
             @PathVariable Long id,
-            @RequestParam String reason) {
+            @RequestParam String reason,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate newDeadline) {
         UserDTO currentUser = contractService.getAuthenticatedUser(token);
         if (!isAdmin(currentUser) && !"CLIENT".equals(currentUser.getRole())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only CLIENT or ADMIN can reject milestones");
@@ -278,8 +282,35 @@ public class MilestoneController {
                     "You are not allowed to reject milestones for this contract");
         }
 
-        Milestone rejected = milestoneService.rejectMilestone(id, reason);
+        Milestone rejected = milestoneService.rejectMilestone(id, reason, newDeadline);
         return ResponseEntity.ok(rejected);
+    }
+
+    @PatchMapping("/{id}/deadline")
+    @Operation(summary = "Modifier uniquement la deadline d'un jalon rejete (REJECTED) [CLIENT/ADMIN]")
+    public ResponseEntity<Milestone> updateRejectedMilestoneDeadline(
+            @RequestHeader(value = "Authorization", required = false) String token,
+            @PathVariable Long id,
+            @RequestParam
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate newDeadline) {
+        UserDTO currentUser = contractService.getAuthenticatedUser(token);
+        if (!isAdmin(currentUser) && !"CLIENT".equals(currentUser.getRole())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only CLIENT or ADMIN can update milestone deadline");
+        }
+
+        Milestone milestone = milestoneService.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Milestone not found with id: " + id));
+        Contract contract = requireContract(milestone.getContractId());
+        requireSignedContract(contract);
+
+        if (!isAdmin(currentUser)
+                && (contract.getClientId() == null || !contract.getClientId().equals(currentUser.getId()))) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "You are not allowed to update milestone deadline for this contract");
+        }
+
+        return ResponseEntity.ok(milestoneService.updateRejectedMilestoneDeadline(id, newDeadline));
     }
 
     @PostMapping("/{id}/auto-approve")

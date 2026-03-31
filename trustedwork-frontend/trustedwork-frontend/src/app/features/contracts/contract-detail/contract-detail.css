@@ -161,6 +161,22 @@
 .badge-DRAFT { background: #e2eafc; color: #3f37c9; }
 .badge-ACTIVE { background: #d8f3dc; color: #1b4332; }
 .badge-COMPLETED { background: #caf0f8; color: #0077b6; }
+.status-REJECTED { background: #fff5f5; color: #fa5252; }
+
+.rejection-alert {
+  background-color: #fff5f5;
+  border-left: 4px solid #fa5252;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.modal-backdrop {
+  z-index: 1050;
+}
+
+.modal {
+  z-index: 1060;
+}
 
 /* Table Improvements */
 .table {

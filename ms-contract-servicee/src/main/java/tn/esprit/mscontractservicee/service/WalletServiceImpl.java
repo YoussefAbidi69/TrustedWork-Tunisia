@@ -81,7 +81,7 @@ public class WalletServiceImpl implements IWalletService {
             wallet.setUpdatedAt(LocalDateTime.now());
             walletRepository.save(wallet);
 
-            log.info("✅ Simulated Stripe account created: {}", simulatedAccountId);
+            log.info(" Simulated Stripe account created: {}", simulatedAccountId);
             return simulatedAccountId;
         }
 
@@ -96,7 +96,7 @@ public class WalletServiceImpl implements IWalletService {
             if (wallet.getStripeAccountId() == null) {
                 return "NOT_CREATED";
             }
-            log.info("🔧 SIMULATION: Stripe account status for user {}: {}", userId, wallet.getStripeAccountStatus());
+            log.info(" SIMULATION: Stripe account status for user {}: {}", userId, wallet.getStripeAccountStatus());
             return wallet.getStripeAccountStatus() != null ? wallet.getStripeAccountStatus() : "ACTIVE";
         }
 
@@ -106,7 +106,7 @@ public class WalletServiceImpl implements IWalletService {
     @Override
     public String getOnboardingLink(Long userId) throws Exception {
         if (simulationEnabled) {
-            log.info("🔧 SIMULATION: Generating onboarding link for user: {}", userId);
+            log.info(" SIMULATION: Generating onboarding link for user: {}", userId);
             return "http://localhost:4200/wallet/simulation-success";
         }
 

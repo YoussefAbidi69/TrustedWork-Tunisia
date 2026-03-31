@@ -78,18 +78,49 @@ export class MilestoneFormComponent implements OnInit {
   onSubmit(): void {
     this.loading = true;
     
-    const payload = { ...this.milestone } as any;
-    if (payload.deadline === '') payload.deadline = null;
-    
+    // Special case: after a client rejects a milestone, they can adjust only the deadline (backend blocks PUT).
+    if (this.isEditMode && this.milestone.id && this.milestone.status === 'REJECTED') {
+      if (!this.isClient && !this.isAdmin) {
+        this.error = "Vous n'avez pas l'autorisation de modifier la deadline de ce jalon.";
+        this.loading = false;
+        return;
+      }
+      if (!this.milestone.deadline) {
+        this.error = "La deadline est obligatoire.";
+        this.loading = false;
+        return;
+      }
+
+      this.milestoneService.updateRejectedDeadline(this.milestone.id, String(this.milestone.deadline || '')).subscribe({
+        next: () => {
+          this.router.navigate(['/contracts', this.milestone.contractId]);
+        },
+        error: (err) => {
+          this.error = 'Erreur lors de la modification de la deadline';
+          this.loading = false;
+          console.error('Update Deadline Error:', err);
+        }
+      });
+      return;
+    }
+
+    // Nettoyage du payload pour s'assurer que les types correspondent au backend
+    const payload: Milestone = {
+      ...this.milestone,
+      contractId: Number(this.milestone.contractId),
+      montant: Number(this.milestone.montant),
+      deadline: this.milestone.deadline || null
+    };
+
     if (this.isEditMode) {
       this.milestoneService.update(this.milestone.id!, payload).subscribe({
         next: () => {
           this.router.navigate(['/contracts', this.milestone.contractId]);
         },
         error: (err) => {
-          this.error = 'Erreur lors de la modification';
+          this.error = 'Erreur lors de la modification (Vérifiez les données)';
           this.loading = false;
-          console.error(err);
+          console.error('Update Error:', err);
         }
       });
     } else {
@@ -100,7 +131,7 @@ export class MilestoneFormComponent implements OnInit {
         error: (err) => {
           this.error = 'Erreur lors de la création';
           this.loading = false;
-          console.error(err);
+          console.error('Create Error:', err);
         }
       });
     }

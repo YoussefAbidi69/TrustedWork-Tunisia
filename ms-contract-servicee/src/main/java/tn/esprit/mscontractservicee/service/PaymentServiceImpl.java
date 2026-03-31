@@ -124,7 +124,7 @@ public class PaymentServiceImpl implements IPaymentService {
                     .build();
             transactionRepository.save(transaction);
 
-            log.info("✅ SIMULATION: Payment confirmed for contract: {}", contractId);
+            log.info(" SIMULATION: Payment confirmed for contract: {}", contractId);
             return;
         }
 
@@ -265,7 +265,7 @@ public class PaymentServiceImpl implements IPaymentService {
         }
 
         if (simulationEnabled) {
-            log.info("🔧 SIMULATION: Releasing payment to freelancer - Contract: {}, Milestone: {}",
+            log.info(" SIMULATION: Releasing payment to freelancer - Contract: {}, Milestone: {}",
                     contract.getId(), milestone.getId());
             log.info("   Amount: {} (Commission: {}, Net: {})", amount, commission, netAmount);
         }
@@ -320,7 +320,7 @@ public class PaymentServiceImpl implements IPaymentService {
     @Override
     public String getPaymentStatus(String paymentIntentId) throws Exception {
         if (simulationEnabled) {
-            log.info("🔧 SIMULATION: Getting payment status for: {}", paymentIntentId);
+            log.info(" SIMULATION: Getting payment status for: {}", paymentIntentId);
 
             if (paymentIntentId.startsWith("sim_")) {
                 return "succeeded";

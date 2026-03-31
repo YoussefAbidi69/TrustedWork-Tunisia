@@ -12,6 +12,7 @@ import tn.esprit.mscontractservicee.entity.Milestone;
 import tn.esprit.mscontractservicee.enums.MilestoneStatus;
 import tn.esprit.mscontractservicee.repository.MilestoneRepository;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -101,13 +102,16 @@ public class MilestoneServiceImpl implements IMilestoneService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Milestone not found with id: " + id));
 
-        if (milestone.getStatus() != MilestoneStatus.IN_PROGRESS) {
+        if (milestone.getStatus() != MilestoneStatus.IN_PROGRESS && milestone.getStatus() != MilestoneStatus.REJECTED) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Milestone cannot be submitted. Current status: " + milestone.getStatus());
         }
 
         milestone.setStatus(MilestoneStatus.SUBMITTED);
         milestone.setSubmittedAt(LocalDateTime.now());
+        // New submission supersedes any previous validation decision.
+        milestone.setValidatedAt(null);
+        milestone.setRejectionReason(null);
 
         return milestoneRepository.save(milestone);
     }
@@ -167,8 +171,15 @@ public class MilestoneServiceImpl implements IMilestoneService {
     }
 
     @Override
-    public Milestone rejectMilestone(Long id, String rejectionReason) {
+    public Milestone rejectMilestone(Long id, String rejectionReason, LocalDate newDeadline) {
         log.info("Rejecting milestone: {} with reason: {}", id, rejectionReason);
+
+        if (rejectionReason == null || rejectionReason.trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "rejectionReason is required");
+        }
+        if (newDeadline != null && newDeadline.isBefore(LocalDate.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "newDeadline must be today or in the future");
+        }
 
         Milestone milestone = milestoneRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
@@ -180,10 +191,43 @@ public class MilestoneServiceImpl implements IMilestoneService {
         }
 
         milestone.setStatus(MilestoneStatus.REJECTED);
-        milestone.setRejectionReason(rejectionReason);
+        milestone.setRejectionReason(rejectionReason.trim());
         milestone.setValidatedAt(LocalDateTime.now());
+        if (newDeadline != null) {
+            milestone.setDeadline(newDeadline);
+        }
 
         return milestoneRepository.save(milestone);
+    }
+
+    @Override
+    public Milestone updateRejectedMilestoneDeadline(Long id, LocalDate newDeadline) {
+        log.info("Updating rejected milestone: {} deadline to: {}", id, newDeadline);
+
+        if (newDeadline == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "newDeadline is required");
+        }
+        if (newDeadline.isBefore(LocalDate.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "newDeadline must be today or in the future");
+        }
+
+        Milestone milestone = milestoneRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Milestone not found with id: " + id));
+
+        if (milestone.getStatus() != MilestoneStatus.REJECTED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Deadline can only be changed for REJECTED milestones. Current status: " + milestone.getStatus());
+        }
+
+        milestone.setDeadline(newDeadline);
+        return milestoneRepository.save(milestone);
+    }
+
+    @Override
+    // Backward-compatible overload (e.g. if some code calls the impl directly).
+    public Milestone rejectMilestone(Long id, String rejectionReason) {
+        return rejectMilestone(id, rejectionReason, null);
     }
 
     @Override

@@ -4,11 +4,12 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MilestoneService } from '../../../core/services/milestone.service';
 import { Milestone } from '../../../core/models/milestone.model';
 import { AuthService } from '../../../core/services/auth.service';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-milestone-list',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, FormsModule],
   templateUrl: './milestone-list.html',
   styleUrl: './milestone-list.css'
 })
@@ -17,6 +18,13 @@ export class MilestoneListComponent implements OnInit {
   contractId: number | null = null;
   loading = false;
   error = '';
+  
+  // Rejection Modal State
+  showRejectModal = false;
+  rejectionReason = '';
+  newDeadline = '';
+  selectedMilestoneId: number | null = null;
+  minDate = new Date().toISOString().split('T')[0];
 
   constructor(
     private route: ActivatedRoute,
@@ -119,14 +127,40 @@ export class MilestoneListComponent implements OnInit {
   }
 
   rejectMilestone(id: number): void {
-    const reason = prompt('Motif du rejet :');
-    if (reason !== null && reason.trim() !== '') {
-      this.milestoneService.reject(id, reason).subscribe({
+    this.selectedMilestoneId = id;
+    this.rejectionReason = '';
+    this.newDeadline = '';
+    this.showRejectModal = true;
+  }
+
+  closeRejectModal(): void {
+    this.showRejectModal = false;
+    this.selectedMilestoneId = null;
+  }
+
+  confirmReject(): void {
+    if (!this.rejectionReason.trim()) {
+      alert('Un motif est obligatoire pour rejeter un jalon.');
+      return;
+    }
+
+    if (this.selectedMilestoneId) {
+      this.milestoneService.reject(this.selectedMilestoneId, this.rejectionReason, this.newDeadline || undefined).subscribe({
+        next: () => {
+          this.loadMilestones();
+          this.closeRejectModal();
+        },
+        error: (err) => console.error(err)
+      });
+    }
+  }
+
+  resubmitMilestone(id: number): void {
+    if (confirm('Voulez-vous soumettre à nouveau ce jalon ?')) {
+      this.milestoneService.resubmit(id).subscribe({
         next: () => this.loadMilestones(),
         error: (err) => console.error(err)
       });
-    } else if (reason !== null) {
-      alert('Un motif est obligatoire pour rejeter un jalon.');
     }
   }
 

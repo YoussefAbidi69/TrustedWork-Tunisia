@@ -53,7 +53,7 @@
                       {{ expandedContracts[contract.id!] ? 'Cacher Jalons' : 'Voir Jalons' }}
                     </button>
                     <a [routerLink]="['/contracts', contract.id]" class="btn btn-sm btn-info me-1">Détails</a>
-                    <ng-container *ngIf="isClient || isAdmin">
+                    <ng-container *ngIf="isAdmin">
                       <a [routerLink]="['/contracts', contract.id, 'edit']" class="btn btn-sm btn-warning me-1">Modifier</a>
                       <button (click)="deleteContract(contract.id!)" class="btn btn-sm btn-danger">Supprimer</button>
                     </ng-container>

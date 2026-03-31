@@ -19,7 +19,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class WalletController {
 
-    private final IWalletService walletService;  // ✅ Interface
+    private final IWalletService walletService;  //  Interface
     private final TransactionRepository transactionRepository;
 
     private static WalletResponse toResponse(tn.esprit.mscontractservicee.entity.Wallet wallet) {

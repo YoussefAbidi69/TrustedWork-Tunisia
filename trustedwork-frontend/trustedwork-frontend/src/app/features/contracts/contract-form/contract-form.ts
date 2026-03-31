@@ -21,7 +21,7 @@ export class ContractFormComponent implements OnInit {
     freelancerId: 0,
     clientWalletId: 0,
     freelancerWalletId: 0,
-    projectId: 0,
+    projectId: null,
     projectTitle: '',
     description: '',
     montantTotal: 0,
@@ -52,6 +52,10 @@ export class ContractFormComponent implements OnInit {
     
     const id = this.route.snapshot.params['id'];
     if (id) {
+      if (this.authService.getRole() === 'CLIENT') {
+        this.error = "Les clients n'ont plus l'autorisation de modifier les contrats existants.";
+        return;
+      }
       this.isEditMode = true;
       this.loadContract(id);
     }

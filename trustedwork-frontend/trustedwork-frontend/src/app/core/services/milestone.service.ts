@@ -48,8 +48,20 @@ export class MilestoneService {
     return this.api.post<Milestone>(`${this.endpoint}/${id}/approve`, {});
   }
 
-  reject(id: number, reason: string): Observable<Milestone> {
-    return this.api.post<Milestone>(`${this.endpoint}/${id}/reject?reason=${encodeURIComponent(reason)}`, {});
+  reject(id: number, reason: string, newDeadline?: string): Observable<Milestone> {
+    const params: any = { reason };
+    if (newDeadline) {
+      params.newDeadline = newDeadline;
+    }
+    return this.api.post<Milestone>(`${this.endpoint}/${id}/reject`, {}, params);
+  }
+
+  updateRejectedDeadline(id: number, newDeadline: string): Observable<Milestone> {
+    return this.api.patch<Milestone>(`${this.endpoint}/${id}/deadline`, {}, { newDeadline });
+  }
+
+  resubmit(id: number): Observable<Milestone> {
+    return this.api.post<Milestone>(`${this.endpoint}/${id}/submit`, {});
   }
 
   delete(id: number): Observable<void> {

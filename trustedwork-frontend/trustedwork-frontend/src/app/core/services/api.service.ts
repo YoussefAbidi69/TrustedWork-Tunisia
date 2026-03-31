@@ -12,28 +12,34 @@ export class ApiService {
   constructor(private http: HttpClient) {}
 
   get<T>(endpoint: string, params?: any): Observable<T> {
+    return this.http.get<T>(`${API_URL}/${endpoint}`, { params: this.buildParams(params) });
+  }
+
+  post<T>(endpoint: string, data: any, params?: any): Observable<T> {
+    return this.http.post<T>(`${API_URL}/${endpoint}`, data, { params: this.buildParams(params) });
+  }
+
+  put<T>(endpoint: string, data: any, params?: any): Observable<T> {
+    return this.http.put<T>(`${API_URL}/${endpoint}`, data, { params: this.buildParams(params) });
+  }
+
+  patch<T>(endpoint: string, data?: any, params?: any): Observable<T> {
+    return this.http.patch<T>(`${API_URL}/${endpoint}`, data, { params: this.buildParams(params) });
+  }
+
+  delete<T>(endpoint: string, params?: any): Observable<T> {
+    return this.http.delete<T>(`${API_URL}/${endpoint}`, { params: this.buildParams(params) });
+  }
+
+  private buildParams(params?: any): HttpParams {
     let httpParams = new HttpParams();
     if (params) {
       Object.keys(params).forEach(key => {
-        httpParams = httpParams.set(key, params[key]);
+        if (params[key] !== undefined && params[key] !== null) {
+          httpParams = httpParams.set(key, params[key]);
+        }
       });
     }
-    return this.http.get<T>(`${API_URL}/${endpoint}`, { params: httpParams });
-  }
-
-  post<T>(endpoint: string, data: any): Observable<T> {
-    return this.http.post<T>(`${API_URL}/${endpoint}`, data);
-  }
-
-  put<T>(endpoint: string, data: any): Observable<T> {
-    return this.http.put<T>(`${API_URL}/${endpoint}`, data);
-  }
-
-  patch<T>(endpoint: string, data?: any): Observable<T> {
-    return this.http.patch<T>(`${API_URL}/${endpoint}`, data);
-  }
-
-  delete<T>(endpoint: string): Observable<T> {
-    return this.http.delete<T>(`${API_URL}/${endpoint}`);
+    return httpParams;
   }
 }
