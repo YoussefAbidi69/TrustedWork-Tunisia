@@ -9,6 +9,8 @@ public interface IReviewService {
 
     ReviewResponse createReview(ReviewRequest request);
 
+    ReviewResponse updateReview(Long id, ReviewRequest request);
+
     List<ReviewResponse> getAllReviews();
 
     ReviewResponse getReviewById(Long id);

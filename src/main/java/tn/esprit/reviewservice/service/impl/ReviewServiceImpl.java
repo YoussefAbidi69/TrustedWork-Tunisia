@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import tn.esprit.reviewservice.dto.request.ReviewRequest;
 import tn.esprit.reviewservice.dto.response.ReviewResponse;
 import tn.esprit.reviewservice.entity.Review;
+import tn.esprit.reviewservice.exception.ResourceNotFoundException;
 import tn.esprit.reviewservice.mapper.ReviewMapper;
 import tn.esprit.reviewservice.repository.ReviewRepository;
 import tn.esprit.reviewservice.service.interfaces.IReviewService;
@@ -30,6 +31,22 @@ public class ReviewServiceImpl implements IReviewService {
     }
 
     @Override
+    public ReviewResponse updateReview(Long id, ReviewRequest request) {
+        Review existingReview = reviewRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Review introuvable avec id : " + id));
+
+        existingReview.setContractId(request.getContractId());
+        existingReview.setReviewerId(request.getReviewerId());
+        existingReview.setReviewedUserId(request.getReviewedUserId());
+        existingReview.setReviewType(request.getReviewType());
+        existingReview.setRating(request.getRating());
+        existingReview.setComment(request.getComment());
+
+        Review updatedReview = reviewRepository.save(existingReview);
+        return reviewMapper.toResponse(updatedReview);
+    }
+
+    @Override
     public List<ReviewResponse> getAllReviews() {
         return reviewRepository.findAll()
                 .stream()
@@ -39,13 +56,15 @@ public class ReviewServiceImpl implements IReviewService {
 
     @Override
     public ReviewResponse getReviewById(Long id) {
-        return reviewRepository.findById(id)
-                .map(reviewMapper::toResponse)
-                .orElse(null);
+        Review review = reviewRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Review introuvable avec id : " + id));
+        return reviewMapper.toResponse(review);
     }
 
     @Override
     public void deleteReview(Long id) {
-        reviewRepository.deleteById(id);
+        Review review = reviewRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Review introuvable avec id : " + id));
+        reviewRepository.delete(review);
     }
 }

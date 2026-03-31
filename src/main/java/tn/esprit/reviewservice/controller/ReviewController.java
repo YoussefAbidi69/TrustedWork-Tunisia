@@ -1,6 +1,8 @@
 package tn.esprit.reviewservice.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tn.esprit.reviewservice.dto.request.ReviewRequest;
@@ -18,8 +20,14 @@ public class ReviewController {
     private final IReviewService reviewService;
 
     @PostMapping
-    public ResponseEntity<ReviewResponse> createReview(@RequestBody ReviewRequest request) {
-        return ResponseEntity.ok(reviewService.createReview(request));
+    public ResponseEntity<ReviewResponse> createReview(@Valid @RequestBody ReviewRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(reviewService.createReview(request));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ReviewResponse> updateReview(@PathVariable Long id,
+                                                       @Valid @RequestBody ReviewRequest request) {
+        return ResponseEntity.ok(reviewService.updateReview(id, request));
     }
 
     @GetMapping
