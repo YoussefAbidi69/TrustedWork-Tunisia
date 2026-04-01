@@ -18,6 +18,7 @@ public class TrustScore {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, unique = true)
     private Long userId;
 
     private Double score;
@@ -50,12 +51,12 @@ public class TrustScore {
             this.totalReviews = 0;
         }
 
-        if (this.categorie == null) {
-            this.categorie = CategorieConfiance.FAIBLE;
-        }
-
         if (this.tendance == null) {
             this.tendance = Tendance.STABLE;
+        }
+
+        if (this.categorie == null) {
+            this.categorie = CategorieConfiance.FAIBLE;
         }
     }
 

@@ -4,6 +4,8 @@ import org.springframework.stereotype.Service;
 import tn.esprit.reviewservice.dto.request.TrustScoreRequest;
 import tn.esprit.reviewservice.dto.response.TrustScoreResponse;
 import tn.esprit.reviewservice.entity.TrustScore;
+import tn.esprit.reviewservice.entity.enums.CategorieConfiance;
+import tn.esprit.reviewservice.entity.enums.Tendance;
 import tn.esprit.reviewservice.exception.ResourceNotFoundException;
 import tn.esprit.reviewservice.mapper.TrustScoreMapper;
 import tn.esprit.reviewservice.repository.TrustScoreRepository;
@@ -25,7 +27,18 @@ public class TrustScoreServiceImpl implements ITrustScoreService {
 
     @Override
     public TrustScoreResponse createTrustScore(TrustScoreRequest request) {
-        TrustScore trustScore = trustScoreMapper.toEntity(request);
+        TrustScore trustScore = trustScoreRepository.findByUserId(request.getUserId())
+                .orElse(new TrustScore());
+
+        trustScore.setUserId(request.getUserId());
+        trustScore.setScore(request.getScore());
+        trustScore.setAverageRating(request.getAverageRating());
+        trustScore.setTotalReviews(request.getTotalReviews());
+        trustScore.setCategorie(calculateCategorie(request.getScore()));
+        trustScore.setTendance(
+                request.getTendance() != null ? request.getTendance() : Tendance.STABLE
+        );
+
         TrustScore savedTrustScore = trustScoreRepository.save(trustScore);
         return trustScoreMapper.toResponse(savedTrustScore);
     }
@@ -39,8 +52,12 @@ public class TrustScoreServiceImpl implements ITrustScoreService {
         existingTrustScore.setScore(request.getScore());
         existingTrustScore.setAverageRating(request.getAverageRating());
         existingTrustScore.setTotalReviews(request.getTotalReviews());
-        existingTrustScore.setCategorie(request.getCategorie());
-        existingTrustScore.setTendance(request.getTendance());
+
+        existingTrustScore.setCategorie(calculateCategorie(request.getScore()));
+
+        existingTrustScore.setTendance(
+                request.getTendance() != null ? request.getTendance() : Tendance.STABLE
+        );
 
         TrustScore updatedTrustScore = trustScoreRepository.save(existingTrustScore);
         return trustScoreMapper.toResponse(updatedTrustScore);
@@ -73,5 +90,19 @@ public class TrustScoreServiceImpl implements ITrustScoreService {
         TrustScore trustScore = trustScoreRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("TrustScore introuvable avec id : " + id));
         trustScoreRepository.delete(trustScore);
+    }
+
+    private CategorieConfiance calculateCategorie(Double score) {
+        if (score == null) {
+            return CategorieConfiance.FAIBLE;
+        }
+
+        if (score < 40) {
+            return CategorieConfiance.FAIBLE;
+        } else if (score < 70) {
+            return CategorieConfiance.MOYENNE;
+        } else {
+            return CategorieConfiance.ELEVEE;
+        }
     }
 }
