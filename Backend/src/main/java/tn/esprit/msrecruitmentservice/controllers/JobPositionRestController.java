@@ -61,4 +61,18 @@ public class JobPositionRestController {
     public ResponseEntity<List<JobPositionDTO>> getPublished() {
         return ResponseEntity.ok(jobPositionService.getPublished());
     }
+
+
+    //Ia
+    @PostMapping("/{id}/generate-description")
+    @Operation(
+            summary = "Générer une description de poste via IA (Hugging Face)",
+            description = "Utilise Mistral-7B-Instruct sur Hugging Face pour générer automatiquement " +
+                    "une description professionnelle basée sur le titre, les skills, " +
+                    "le type de contrat et la localisation du poste. " +
+                    "Le résultat est sauvegardé directement dans le champ 'description'."
+    )
+    public ResponseEntity<JobPositionDTO> generateDescription(@PathVariable Long id) {
+        return ResponseEntity.ok(jobPositionService.generateAndSaveDescription(id));
+    }
 }

@@ -40,9 +40,17 @@ export class JobPositionCreateComponent implements OnInit {
             experienceRequiseAns: [0],
             skillsRequis: [''],
             deadline: [''],
-            status: ['DRAFT'],
+            status: ['PUBLISHED'],
             entrepriseId: [2],
             nombreCandidatures: [0]  // ← champ ajouté
+        });
+
+        this.form.get('deadline')?.valueChanges.subscribe(value => {
+
+            if (value) {
+                this.generateDescription();
+            }
+
         });
 
         const id = this.route.snapshot.paramMap.get('id');
@@ -55,25 +63,52 @@ export class JobPositionCreateComponent implements OnInit {
         }
     }
 
-    // ✅ Bouton "Générer avec IA" — appelle POST /job-positions/{id}/generate-description
-    generateDescription(): void {
-        if (!this.editId) {
-            alert('Sauvegardez d\'abord l\'offre pour pouvoir générer une description avec l\'IA.');
-            return;
-        }
+    callAI(): void {
+
+        if (!this.editId) return;
+
         this.aiLoading = true;
+
         this.jobPositionService.generateDescription(this.editId).subscribe({
             next: (result: any) => {
-                // Le backend renvoie la description générée
-                const desc = typeof result === 'string' ? result : result.description ?? result;
-                this.form.patchValue({ description: desc });
+
+                const desc = typeof result === 'string'
+                    ? result
+                    : result.description ?? result;
+
+                this.form.patchValue({
+                    description: desc
+                });
+
                 this.aiLoading = false;
             },
             error: () => {
                 this.aiLoading = false;
-                alert('Erreur lors de la génération IA. Vérifiez que le backend est actif.');
+                alert("Erreur génération IA");
             }
         });
+
+    }
+
+    // ✅ Bouton "Générer avec IA" — appelle POST /job-positions/{id}/generate-description
+    generateDescription(): void {
+
+        // si le job existe déjà
+        if (this.editId) {
+            this.callAI();
+            return;
+        }
+
+        // créer le job automatiquement
+        this.jobPositionService.create(this.form.value).subscribe((job: any) => {
+
+            this.editId = job.id;
+            this.isEditMode = true;
+
+            this.callAI();
+
+        });
+
     }
 
     onSubmit(): void {

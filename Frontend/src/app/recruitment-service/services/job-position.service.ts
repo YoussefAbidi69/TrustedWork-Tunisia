@@ -34,11 +34,17 @@ export class JobPositionService {
         return this.http.get<JobPosition[]>(`${this.baseUrl}/published`);
     }
 
-    generateDescription(id: number): Observable<any> {
-        return this.http.post<any>(`${this.baseUrl}/${id}/generate-description`, {});
-    }
+
 
     getByEntreprise(entrepriseId: number): Observable<JobPosition[]> {
         return this.http.get<JobPosition[]>(`${this.baseUrl}/entreprise/${entrepriseId}`);
     }
+
+    generateDescription(id: number) {
+        return this.http.post(
+            `${this.baseUrl}/${id}/generate-description`,
+            {}
+        );
+    }
+
 }

@@ -19,6 +19,10 @@ public class JobPositionServiceImpl implements IJobPositionService {
     @Autowired
     private JobPositionMapper mapper;
 
+
+    @Autowired
+    private HuggingFaceService huggingFaceService;
+
     @Override
     public JobPositionDTO createJobPosition(JobPositionDTO dto) {
         return mapper.toDTO(jobPositionRepository.save(mapper.toEntity(dto)));
@@ -69,5 +73,34 @@ public class JobPositionServiceImpl implements IJobPositionService {
     public List<JobPositionDTO> getPublished() {
         return jobPositionRepository.findByStatus(JobStatus.PUBLISHED)
                 .stream().map(mapper::toDTO).collect(Collectors.toList());
+    }
+
+
+
+    @Override
+    public JobPositionDTO generateAndSaveDescription(Long id) {
+        // 1. Récupérer l'offre existante
+        JobPosition jobPosition = jobPositionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("JobPosition non trouvée : " + id));
+
+        // 2. Préparer les paramètres pour le prompt IA
+        String titre = jobPosition.getTitre() != null ? jobPosition.getTitre() : "Poste non défini";
+        String skills = jobPosition.getSkillsRequis() != null ? jobPosition.getSkillsRequis() : "Non spécifié";
+        String typeContrat = jobPosition.getTypeContrat() != null
+                ? jobPosition.getTypeContrat().name() : "CDI";
+        String localisation = jobPosition.getLocalisation() != null
+                ? jobPosition.getLocalisation() : "Tunisie";
+
+        // 3. Appel Hugging Face → génération de la description
+        String descriptionGeneree = huggingFaceService.generateJobDescription(
+                titre, skills, typeContrat, localisation
+        );
+
+        // 4. Sauvegarder la description générée dans la base
+        jobPosition.setDescription(descriptionGeneree);
+        JobPosition saved = jobPositionRepository.save(jobPosition);
+
+        // 5. Retourner le DTO mis à jour
+        return mapper.toDTO(saved);
     }
 }

@@ -16,35 +16,25 @@
                 <div class="label-row">
                     <label for="description">Description *</label>
 
-                    <!-- ============================= -->
-                    <!-- 🚀 PHASE 2 : GEMINI AI -->
-                    <!--
-                    <button
-                        *ngIf="isEditMode"
-                        type="button"
-                        class="btn-ai"
-                        [disabled]="aiLoading"
+                    <!-- ✅ BOUTON IA — Hugging Face (Mistral-7B) -->
+                    <button type="button" class="btn-ai" [disabled]="aiLoading || !form.value.titre"
                         (click)="generateDescription()">
 
-                        <span *ngIf="!aiLoading">
-                            ✨ Générer avec Gemini
-                        </span>
 
-                        <span *ngIf="aiLoading">
-                            ⏳ Génération en cours...
+
+                        <span *ngIf="aiLoading" class="ai-loading-text">
+                            <span class="ai-spinner"></span> Génération en cours...
                         </span>
 
                     </button>
 
-                    <span *ngIf="!isEditMode" class="ai-hint">
-                        💡 Sauvegardez d'abord pour utiliser l'IA
-                    </span>
-                    -->
-                    <!-- ============================= -->
+                    <!-- Message si mode création -->
+
 
                 </div>
 
-                <textarea id="description" formControlName="description" rows="5" placeholder="Job description...">
+                <textarea id="description" formControlName="description" rows="6"
+                    placeholder="La description sera générée automatiquement par l'IA, ou saisissez-la manuellement...">
                 </textarea>
 
             </div>
@@ -60,14 +50,7 @@
             </div>
 
             <!-- Status -->
-            <div class="form-group">
-                <label for="status">Status *</label>
-                <select id="status" formControlName="status">
-                    <option *ngFor="let s of statuses" [value]="s">
-                        {{ s }}
-                    </option>
-                </select>
-            </div>
+
 
             <!-- Salary -->
             <div class="form-group">
@@ -103,7 +86,7 @@
             <!-- Skills -->
             <div class="form-group">
                 <label for="skillsRequis">Skills *</label>
-                <input id="skillsRequis" formControlName="skillsRequis" placeholder="Angular, Spring Boot, Docker" />
+                <input id="skillsRequis" formControlName="skillsRequis" placeholder="Spring Boot, Docker, MySQL" />
             </div>
 
             <!-- Deadline -->
@@ -112,7 +95,7 @@
                 <input id="deadline" type="date" formControlName="deadline" />
             </div>
 
-            <!-- Candidatures -->
+            <!-- Candidatures (readonly en edit) -->
             <div class="form-group" *ngIf="isEditMode">
                 <label for="nombreCandidatures">Candidatures reçues</label>
                 <input id="nombreCandidatures" type="number" formControlName="nombreCandidatures" readonly
@@ -121,17 +104,12 @@
 
             <!-- Actions -->
             <div class="form-actions full-width">
-
                 <button type="button" class="btn btn-outline" routerLink="/recruitment/job-positions">
                     Cancel
                 </button>
-
                 <app-button-primary icon="💾" [loading]="loading" [disabled]="form.invalid">
-
                     {{ isEditMode ? 'Save Changes' : 'Create Position' }}
-
                 </app-button-primary>
-
             </div>
 
         </form>

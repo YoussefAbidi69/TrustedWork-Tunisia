@@ -11,4 +11,10 @@ public interface IJobPositionService {
     List<JobPositionDTO> getAll();
     List<JobPositionDTO> getByEntreprise(Long entrepriseId);
     List<JobPositionDTO> getPublished();
+
+
+
+    //Ia :
+    JobPositionDTO generateAndSaveDescription(Long id);
+
 }
