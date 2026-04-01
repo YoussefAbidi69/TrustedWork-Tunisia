@@ -1,72 +1,93 @@
 <div class="page animate-fade-in">
 
+    <!-- Loading state -->
     <div class="loading-state" *ngIf="loading">
         <div class="spinner"></div><span>Chargement...</span>
     </div>
 
     <div *ngIf="!loading && contract">
 
+        <!-- ── En-tête de page ── -->
         <div class="page-header">
             <button class="btn btn-outline btn-sm" (click)="goBack()">← Retour</button>
             <div class="header-actions">
+
+                <!-- Signer (visible si pas encore signé) -->
                 <app-button-primary *ngIf="!isSigned" icon="✍️" [loading]="signerLoading" (onClick)="signerContrat()">
                     Signer le Contrat
                 </app-button-primary>
-                <button class="btn btn-outline btn-sm" (click)="showFeedbackModal = true">💬 Feedback 3 mois</button>
+
+                <!-- ─────────────────────────────────────────────────────────
+                     BOUTON DOWNLOAD PDF
+                     Visible UNIQUEMENT si status = SIGNED ou ACTIVE
+                     ───────────────────────────────────────────────────────── -->
+                <button *ngIf="isSigned" class="btn btn-pdf" [disabled]="pdfLoading" (click)="downloadPdf()">
+                    <span *ngIf="!pdfLoading">📄 Télécharger le Contrat PDF</span>
+                    <span *ngIf="pdfLoading" class="pdf-loading">
+                        <span class="spinner-sm"></span> Génération IA en cours...
+                    </span>
+                </button>
+
+                <button class="btn btn-outline btn-sm" (click)="showFeedbackModal = true">
+                    📝 Feedback 3 mois
+                </button>
                 <button class="btn btn-outline btn-sm" (click)="onEdit()">✏️ Modifier</button>
-                <button class="btn btn-danger btn-sm" (click)="onDelete()">🗑 Supprimer</button>
+                <button class="btn btn-danger btn-sm" (click)="onDelete()">🗑️ Supprimer</button>
             </div>
         </div>
 
-        <!-- Contract banner -->
+        <!-- ── Bannière du contrat ── -->
         <div class="contract-banner" [class.signed]="isSigned">
             <div class="contract-icon-wrap">
-                <span class="contract-icon">📑</span>
+                <span class="contract-icon">📋</span>
             </div>
             <div class="contract-info">
                 <h2 class="contract-title">Contrat {{ contract.typeContrat }}</h2>
                 <p class="contract-sub">
-                    Freelancer #{{ contract.freelancerId }} · Entreprise #{{ contract.entrepriseId }} · Offre #{{
-                    contract.offerId }}
+                    Freelancer #{{ contract.freelancerId }} •
+                    Entreprise #{{ contract.entrepriseId }} •
+                    Offre #{{ contract.offerId }}
                 </p>
             </div>
             <div class="banner-right">
                 <app-status-badge [status]="contract.status || 'DRAFT'"></app-status-badge>
-                <span class="salary-chip">💰 {{ contract.salaireFinal | number:'1.0-0' }} TND</span>
+                <span class="salary-chip">{{ contract.salaireFinal | number:'1.0-0' }} TND</span>
                 <span class="signed-badge" *ngIf="isSigned">
                     ✅ Signé le {{ contract.dateContratSigne | date:'shortDate' }}
                 </span>
             </div>
         </div>
 
-        <app-recruitment-card title="Détails du Contrat" icon="📑">
-            <div class="detail-grid">
+        <!-- ── Alerte info PDF (visible uniquement si signé) ── -->
 
+
+        <!-- ── Détails du contrat ── -->
+        <app-recruitment-card title="Détails du Contrat" icon="📋">
+            <div class="detail-grid">
                 <div class="detail-item">
                     <span class="detail-label">Type de Contrat</span>
                     <span class="detail-value">{{ contract.typeContrat }}</span>
                 </div>
-
                 <div class="detail-item">
                     <span class="detail-label">Salaire Final</span>
-                    <span class="detail-value text-primary">{{ contract.salaireFinal | number:'1.0-0' }} TND</span>
+                    <span class="detail-value text-primary">
+                        {{ contract.salaireFinal | number:'1.0-0' }} TND
+                    </span>
                 </div>
-
                 <div class="detail-item">
                     <span class="detail-label">Date de Début</span>
-                    <span class="detail-value">{{ contract.dateDebutEffective | date:'longDate' }}</span>
+                    <span class="detail-value">
+                        {{ contract.dateDebutEffective | date:'longDate' }}
+                    </span>
                 </div>
-
                 <div class="detail-item">
                     <span class="detail-label">Période d'Essai</span>
                     <span class="detail-value">{{ contract.periodeEssai }} mois</span>
                 </div>
-
                 <div class="detail-item">
                     <span class="detail-label">Commission Plateforme</span>
                     <span class="detail-value">{{ contract.commissionPlateforme }}%</span>
                 </div>
-
                 <div class="detail-item">
                     <span class="detail-label">Dernière mise à jour</span>
                     <span class="detail-value">{{ contract.updatedAt | date:'longDate' }}</span>
@@ -79,36 +100,39 @@
                         <p class="feedback-text">{{ contract.feedbackPostEmbauche3Mois }}</p>
                     </div>
                 </div>
-
                 <div class="detail-item full-width" *ngIf="!contract.feedbackPostEmbauche3Mois">
                     <span class="detail-label">Feedback Post-Embauche (3 mois)</span>
                     <div class="feedback-placeholder">
                         <span>À remplir 3 mois après l'embauche</span>
-                        <button class="btn-add-feedback" (click)="showFeedbackModal = true">+ Ajouter Feedback</button>
+                        <button class="btn-add-feedback" (click)="showFeedbackModal = true">
+                            + Ajouter Feedback
+                        </button>
                     </div>
                 </div>
-
             </div>
         </app-recruitment-card>
-
     </div>
 
-    <!-- Modal feedback -->
+    <!-- ── Modal Feedback ── -->
     <div class="modal-overlay" *ngIf="showFeedbackModal" (click)="showFeedbackModal = false">
         <div class="modal" (click)="$event.stopPropagation()">
-            <h3 class="modal-title">💬 Feedback Post-Embauche</h3>
-            <p class="modal-subtitle">PATCH /contracts/{{ contract?.id }}/feedback · Bilan à 3 mois</p>
+            <h3 class="modal-title">📝 Feedback Post-Embauche</h3>
+            <p class="modal-subtitle">
+                PATCH /contracts/{{ contract?.id }}/feedback — Bilan à 3 mois
+            </p>
             <textarea class="modal-textarea" [(ngModel)]="feedbackText" rows="5"
-                placeholder="Ex: Intégration réussie, le candidat a rapidement pris ses marques..."></textarea>
+                placeholder="Ex: Intégration réussie, le candidat a rapidement pris ses marques...">
+            </textarea>
             <div class="modal-actions">
                 <button class="btn btn-outline" (click)="showFeedbackModal = false">Annuler</button>
-                <app-button-primary icon="✅" [disabled]="!feedbackText.trim()" (onClick)="submitFeedback()">
+                <app-button-primary icon="💾" [disabled]="!feedbackText.trim()" (onClick)="submitFeedback()">
                     Enregistrer
                 </app-button-primary>
             </div>
         </div>
     </div>
 
+    <!-- Not found -->
     <div *ngIf="!loading && !contract" class="not-found">
         <span>Contrat introuvable.</span>
         <button class="btn btn-outline" (click)="goBack()">Retour</button>

@@ -3,9 +3,12 @@ package tn.esprit.msrecruitmentservice.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tn.esprit.msrecruitmentservice.dto.HiringContractDTO;
+import tn.esprit.msrecruitmentservice.services.ContractPdfService;
 import tn.esprit.msrecruitmentservice.services.IHiringContractService;
 import java.util.List;
 @CrossOrigin(origins = "http://localhost:4200")
@@ -17,6 +20,8 @@ public class HiringContractRestController {
 
     @Autowired
     private IHiringContractService contractService;
+    @Autowired
+    private ContractPdfService contractPdfService;
 
     @PostMapping
     @Operation(summary = "Creer un contrat")
@@ -79,5 +84,40 @@ public class HiringContractRestController {
     public ResponseEntity<HiringContractDTO> feedback(@PathVariable Long id,
                                                       @RequestParam String feedback) {
         return ResponseEntity.ok(contractService.addFeedback(id, feedback));
+    }
+
+
+    @GetMapping(value = "/{id}/download-pdf", produces = MediaType.APPLICATION_PDF_VALUE)
+    @Operation(
+            summary = "Télécharger le PDF du contrat signé (IA + iText)",
+            description = "Génère un PDF professionnel avec clauses juridiques via HuggingFace. " +
+                    "Uniquement disponible si status = SIGNED."
+    )
+    public ResponseEntity<byte[]> downloadContractPdf(@PathVariable Long id) {
+        try {
+            // Vérification que le contrat est bien SIGNED
+            HiringContractDTO contract = contractService.getById(id);
+            if (!"SIGNED".equals(contract.getStatus().name()) &&
+                    !"ACTIVE".equals(contract.getStatus().name())) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            byte[] pdfBytes = contractPdfService.generateContractPdf(id);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDispositionFormData(
+                    "attachment",
+                    "contrat-TW-" + id + ".pdf"
+            );
+            headers.setContentLength(pdfBytes.length);
+
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(pdfBytes);
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 }

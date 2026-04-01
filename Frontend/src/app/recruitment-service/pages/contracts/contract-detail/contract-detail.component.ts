@@ -9,11 +9,15 @@ import { HiringContract } from '../../../models';
   styleUrls: ['./contract-detail.component.css']
 })
 export class ContractDetailComponent implements OnInit {
+
   contract: HiringContract | null = null;
   loading = true;
   signerLoading = false;
   showFeedbackModal = false;
   feedbackText = '';
+
+  // ── PDF ──────────────────────────────────────────────────────────
+  pdfLoading = false;  // Affiche un spinner pendant la génération IA + PDF
 
   constructor(
     private route: ActivatedRoute,
@@ -50,13 +54,49 @@ export class ContractDetailComponent implements OnInit {
     });
   }
 
+  // ── NOUVEAU — GET /contracts/{id}/download-pdf ───────────────────
+  /**
+   * Télécharge le PDF du contrat via le backend (iText + HuggingFace IA).
+   * Le bouton n'est affiché que si isSigned = true (voir le HTML).
+   * Crée un lien <a> temporaire et déclenche le téléchargement.
+   */
+  downloadPdf(): void {
+    if (!this.contract) return;
+    this.pdfLoading = true;
+
+    this.contractService.downloadPdf(this.contract.id!).subscribe({
+      next: (blob: Blob) => {
+        // Créer une URL temporaire à partir du blob PDF
+        const url = window.URL.createObjectURL(blob);
+
+        // Créer un lien <a> invisible et cliquer dessus pour télécharger
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `contrat-TW-${this.contract!.id}.pdf`;
+        link.click();
+
+        // Nettoyer l'URL temporaire après téléchargement
+        window.URL.revokeObjectURL(url);
+        this.pdfLoading = false;
+      },
+      error: () => {
+        alert('Erreur lors de la génération du PDF. Vérifiez que le contrat est bien signé.');
+        this.pdfLoading = false;
+      }
+    });
+  }
+
   goBack(): void { this.router.navigate(['/recruitment/contracts']); }
   onEdit(): void { this.router.navigate(['/recruitment/contracts', this.contract!.id, 'edit']); }
+
   onDelete(): void {
     if (this.contract && confirm('Supprimer ce contrat ?')) {
       this.contractService.delete(this.contract.id!).subscribe({ next: () => this.goBack() });
     }
   }
 
-  get isSigned(): boolean { return this.contract?.status === 'SIGNED' || this.contract?.status === 'ACTIVE'; }
+  // true si le contrat est signé ou actif — contrôle l'affichage du bouton PDF
+  get isSigned(): boolean {
+    return this.contract?.status === 'SIGNED' || this.contract?.status === 'ACTIVE';
+  }
 }

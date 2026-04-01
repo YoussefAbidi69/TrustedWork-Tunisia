@@ -59,4 +59,10 @@ export class ContractService {
         const params = new HttpParams().set('feedback', feedback);
         return this.http.patch<HiringContract>(`${this.baseUrl}/${id}/feedback`, null, { params });
     }
+
+    downloadPdf(id: number): Observable<Blob> {
+        return this.http.get(`${this.baseUrl}/${id}/download-pdf`, {
+            responseType: 'blob'
+        });
+    }
 }
