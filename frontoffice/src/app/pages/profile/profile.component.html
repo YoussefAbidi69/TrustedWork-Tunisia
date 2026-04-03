@@ -1,0 +1,151 @@
+<div class="profile-page">
+  <div class="loading" *ngIf="loading">Chargement du profil...</div>
+
+  <div class="profile-content" *ngIf="user && !loading">
+    <div class="success-msg" *ngIf="saveSuccess">{{ saveSuccess }}</div>
+
+    <!-- ==================== CARTE PROFIL ==================== -->
+    <div class="profile-card">
+      <div class="profile-header">
+
+        <!-- Photo ou initiales -->
+        <div class="avatar-wrapper">
+          <img *ngIf="getPhotoUrl(user.photo)"
+               [src]="getPhotoUrl(user.photo)"
+               [alt]="user.firstName"
+               class="avatar-img"/>
+          <div *ngIf="!getPhotoUrl(user.photo)" class="avatar">
+            {{ user.firstName.charAt(0) }}{{ user.lastName.charAt(0) }}
+          </div>
+        </div>
+
+        <div class="profile-info">
+          <h2>{{ user.firstName }} {{ user.lastName }}</h2>
+          <p>{{ user.email }}</p>
+          <!-- CIN affiché sous l'email -->
+          <p class="user-cin">CIN : {{ user.cin }}</p>
+          <div class="badges">
+            <span class="badge"
+                  [style.background]="getStatusColor(user.role) + '20'"
+                  [style.color]="getStatusColor(user.role)">{{ user.role }}</span>
+            <span class="badge"
+                  [style.background]="getStatusColor(user.accountStatus) + '20'"
+                  [style.color]="getStatusColor(user.accountStatus)">{{ user.accountStatus }}</span>
+            <span class="badge"
+                  [style.background]="getStatusColor(user.kycStatus) + '20'"
+                  [style.color]="getStatusColor(user.kycStatus)">KYC: {{ user.kycStatus }}</span>
+          </div>
+        </div>
+
+        <button class="btn-edit" (click)="toggleEdit()">
+          {{ editing ? 'Annuler' : 'Modifier' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- ==================== INFOS / FORMULAIRE ==================== -->
+    <div class="details-card">
+      <h3>Informations personnelles</h3>
+
+      <!-- Mode lecture -->
+      <div class="info-grid" *ngIf="!editing">
+        <div class="info-item">
+          <span class="info-label">CIN</span>
+          <span class="info-value">{{ user.cin }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Prénom</span>
+          <span class="info-value">{{ user.firstName }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Nom</span>
+          <span class="info-value">{{ user.lastName }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Email</span>
+          <span class="info-value">{{ user.email }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Téléphone</span>
+          <span class="info-value">{{ user.phone || 'Non renseigné' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Photo</span>
+          <span class="info-value">{{ user.photo || 'Aucune' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Membre depuis</span>
+          <span class="info-value">{{ user.createdAt | date:'dd/MM/yyyy' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">2FA</span>
+          <span class="info-value">{{ user.twoFactorEnabled ? 'Activé' : 'Désactivé' }}</span>
+        </div>
+      </div>
+
+      <!-- Mode édition -->
+      <form *ngIf="editing" [formGroup]="editForm" (ngSubmit)="saveProfile()" class="edit-form">
+
+        <div class="error-msg" *ngIf="saveError">{{ saveError }}</div>
+
+        <div class="form-group">
+          <label>Prénom</label>
+          <input type="text" formControlName="firstName"/>
+        </div>
+        <div class="form-group">
+          <label>Nom</label>
+          <input type="text" formControlName="lastName"/>
+        </div>
+        <div class="form-group">
+          <label>Téléphone</label>
+          <input type="text" formControlName="phoneNumber"/>
+        </div>
+
+        <!-- Photo de profil -->
+        <div class="form-group">
+          <label>Photo de profil</label>
+          <div class="photo-edit-area">
+            <div class="photo-preview-sm" *ngIf="photoPreviewUrl">
+              <img [src]="photoPreviewUrl" alt="Photo actuelle"/>
+              <button type="button" class="photo-remove-btn" (click)="removePhoto()">✕</button>
+            </div>
+            <div class="photo-upload-row">
+              <label class="file-label">
+                Choisir un fichier
+                <input type="file" accept="image/*" (change)="onPhotoSelected($event)" style="display:none"/>
+              </label>
+
+              <span class="photo-filename" *ngIf="editForm.get('photo')?.value">
+                {{ editForm.get('photo')?.value }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-save">Enregistrer</button>
+      </form>
+    </div>
+
+    <!-- ==================== CHANGEMENT MOT DE PASSE ==================== -->
+    <div class="password-card">
+      <h3>Changer le mot de passe</h3>
+      <div class="success-msg" *ngIf="passwordSuccess">{{ passwordSuccess }}</div>
+      <div class="error-msg"   *ngIf="passwordError">{{ passwordError }}</div>
+
+      <form [formGroup]="passwordForm" (ngSubmit)="changePassword()" class="edit-form">
+        <div class="form-group">
+          <label>Mot de passe actuel</label>
+          <input type="password" formControlName="currentPassword"/>
+        </div>
+        <div class="form-group">
+          <label>Nouveau mot de passe</label>
+          <input type="password" formControlName="newPassword"/>
+        </div>
+        <button type="submit" class="btn-save" [disabled]="passwordLoading">
+          {{ passwordLoading ? 'Mise à jour...' : 'Changer le mot de passe' }}
+        </button>
+      </form>
+    </div>
+
+  </div>
+</div>
