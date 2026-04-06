@@ -21,10 +21,4 @@ public class AuthResponse {
 
     private boolean twoFactorRequired;
     private String message;
-
-    public AuthResponse(String message, boolean twoFactorRequired) {
-        this.message = message;
-        this.twoFactorRequired = twoFactorRequired;
-        this.tokenType = "Bearer";
-    }
 }

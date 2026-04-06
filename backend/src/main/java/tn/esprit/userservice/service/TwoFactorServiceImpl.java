@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import tn.esprit.userservice.entity.User;
+import tn.esprit.userservice.exception.InvalidTwoFactorCodeException;
 import tn.esprit.userservice.exception.UserNotFoundException;
 import tn.esprit.userservice.repository.UserRepository;
 
@@ -24,10 +25,8 @@ public class TwoFactorServiceImpl implements ITwoFactorService {
 
     private final UserRepository userRepository;
 
-    @Value("${app.2fa.issuer}")
+    @Value("${app.2fa.issuer:TrustedWorkTunisia}")
     private String issuer;
-
-    // ==================== GENERATE SECRET ====================
 
     @Override
     public String generateSecret() {
@@ -35,47 +34,84 @@ public class TwoFactorServiceImpl implements ITwoFactorService {
         return secretGenerator.generate();
     }
 
-    // ==================== QR CODE URI ====================
-
     @Override
     public String getQrCodeUri(String secret, String email) {
-        return String.format("otpauth://totp/%s:%s?secret=%s&issuer=%s&algorithm=SHA1&digits=6&period=30",
-                issuer, email, secret, issuer);
-    }
+        if (secret == null || secret.isBlank() || email == null || email.isBlank()) {
+            throw new IllegalArgumentException("Secret and email must not be null or empty");
+        }
 
-    // ==================== VERIFY CODE ====================
+        return String.format(
+                "otpauth://totp/%s:%s?secret=%s&issuer=%s&algorithm=SHA1&digits=6&period=30",
+                issuer,
+                email,
+                secret,
+                issuer
+        );
+    }
 
     @Override
     public boolean verifyCode(String secret, String code) {
-        if (secret == null || code == null) return false;
+        if (secret == null || secret.isBlank() || code == null || code.isBlank()) {
+            return false;
+        }
+
+        String normalizedCode = code.trim();
 
         CodeVerifier verifier = new DefaultCodeVerifier(
                 new DefaultCodeGenerator(HashingAlgorithm.SHA1),
                 new SystemTimeProvider()
         );
-        return verifier.isValidCode(secret, code);
+
+        return verifier.isValidCode(secret, normalizedCode);
     }
 
-    // ==================== ENABLE 2FA ====================
-
     @Override
-    public void enable2FA(Integer cin) {
+    public String setupTwoFactor(Integer cin) {
         User user = userRepository.findByCin(cin)
                 .orElseThrow(() -> new UserNotFoundException("User not found with cin: " + cin));
 
-        String secret = generateSecret();
-        user.setSecret2FA(secret);
+        String secret = user.getSecret2FA();
+
+        if (secret == null || secret.isBlank()) {
+            secret = generateSecret();
+            user.setSecret2FA(secret);
+            user.setUpdatedAt(LocalDateTime.now());
+            userRepository.save(user);
+        }
+
+        String qrCodeUri = getQrCodeUri(secret, user.getEmail());
+
+        log.info("2FA setup initialized for user: {}", user.getEmail());
+
+        return qrCodeUri;
+    }
+
+    @Override
+    public void confirmTwoFactor(Integer cin, String code) {
+        User user = userRepository.findByCin(cin)
+                .orElseThrow(() -> new UserNotFoundException("User not found with cin: " + cin));
+
+        String secret = user.getSecret2FA();
+
+        if (secret == null || secret.isBlank()) {
+            throw new IllegalStateException("2FA setup not initialized for this user");
+        }
+
+        boolean valid = verifyCode(secret, code);
+
+        if (!valid) {
+            throw new InvalidTwoFactorCodeException("Invalid 2FA code");
+        }
+
         user.setTwoFactorEnabled(true);
         user.setUpdatedAt(LocalDateTime.now());
         userRepository.save(user);
 
-        log.info("2FA enabled for user: {}", user.getEmail());
+        log.info("2FA confirmed and enabled for user: {}", user.getEmail());
     }
 
-    // ==================== DISABLE 2FA ====================
-
     @Override
-    public void disable2FA(Integer cin){
+    public void disable2FA(Integer cin) {
         User user = userRepository.findByCin(cin)
                 .orElseThrow(() -> new UserNotFoundException("User not found with cin: " + cin));
 

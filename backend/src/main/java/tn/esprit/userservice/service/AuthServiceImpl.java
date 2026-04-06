@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import tn.esprit.userservice.dto.AuthResponse;
 import tn.esprit.userservice.dto.LoginRequest;
 import tn.esprit.userservice.dto.RegisterRequest;
+import tn.esprit.userservice.dto.VerifyTwoFactorRequest;
 import tn.esprit.userservice.entity.AccountStatus;
 import tn.esprit.userservice.entity.Role;
 import tn.esprit.userservice.entity.User;
@@ -19,7 +20,6 @@ import tn.esprit.userservice.repository.UserRepository;
 import tn.esprit.userservice.security.JwtService;
 
 import java.time.LocalDateTime;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -31,8 +31,6 @@ public class AuthServiceImpl implements IAuthService {
     private final JwtService jwtService;
     private final ITwoFactorService twoFactorService;
     private final UserMapper userMapper;
-
-    // ==================== REGISTER ====================
 
     @Override
     public AuthResponse register(RegisterRequest request) {
@@ -46,8 +44,8 @@ public class AuthServiceImpl implements IAuthService {
         }
 
         User user = new User();
-        user.setCin(request.getCin());         // ← AJOUT
-        user.setPhoto(request.getPhoto());     // ← AJOUT
+        user.setCin(request.getCin());
+        user.setPhoto(request.getPhoto());
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
         user.setEmail(request.getEmail());
@@ -57,7 +55,6 @@ public class AuthServiceImpl implements IAuthService {
         Role role = Role.valueOf(request.getRole().toUpperCase());
         user.setRole(role);
 
-        // Initialisation centralisée des champs par défaut
         userMapper.initNewUser(user);
 
         User savedUser = userRepository.save(user);
@@ -79,8 +76,6 @@ public class AuthServiceImpl implements IAuthService {
                 .build();
     }
 
-    // ==================== LOGIN ====================
-
     @Override
     public AuthResponse login(LoginRequest request) {
 
@@ -99,23 +94,25 @@ public class AuthServiceImpl implements IAuthService {
             throw new AccountSuspendedException("Your account is disabled or locked");
         }
 
-        if (user.getRole() == null){
+        if (user.getRole() == null) {
             log.error("Login blocked: user {} has no roles loaded from database", user.getEmail());
             throw new InvalidCredentialsException("User has no assigned role");
         }
 
-        // ================= 2FA =================
+        // Si 2FA activée, on ne génère pas encore les tokens
         if (user.isTwoFactorEnabled()) {
+            log.info("2FA required for user {}", user.getEmail());
 
-            if (request.getTwoFactorCode() == null || request.getTwoFactorCode().isBlank()) {
-                return new AuthResponse("2FA code required", true);
-            }
-
-            boolean valid = twoFactorService.verifyCode(user.getSecret2FA(), request.getTwoFactorCode());
-
-            if (!valid) {
-                throw new InvalidTwoFactorCodeException("Invalid 2FA code");
-            }
+            return AuthResponse.builder()
+                    .accessToken(null)
+                    .refreshToken(null)
+                    .tokenType("Bearer")
+                    .userId(user.getId())
+                    .email(user.getEmail())
+                    .role(user.getRole().name())
+                    .twoFactorRequired(true)
+                    .message("2FA code required")
+                    .build();
         }
 
         user.setUpdatedAt(LocalDateTime.now());
@@ -127,8 +124,6 @@ public class AuthServiceImpl implements IAuthService {
         String refreshToken = jwtService.generateRefreshToken(user);
 
         String primaryRole = userMapper.toDTO(user).getRole();
-
-        log.info("User logged in: {}", user.getEmail());
 
         return AuthResponse.builder()
                 .accessToken(accessToken)
@@ -142,7 +137,43 @@ public class AuthServiceImpl implements IAuthService {
                 .build();
     }
 
-    // ==================== REFRESH TOKEN ====================
+    @Override
+    public AuthResponse verifyTwoFactor(VerifyTwoFactorRequest request) {
+
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new InvalidCredentialsException("User not found"));
+
+        if (!user.isTwoFactorEnabled()) {
+            throw new InvalidTwoFactorCodeException("2FA is not enabled for this account");
+        }
+
+        boolean valid = twoFactorService.verifyCode(user.getSecret2FA(), request.getCode());
+
+        if (!valid) {
+            throw new InvalidTwoFactorCodeException("Invalid 2FA code");
+        }
+
+        user.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(user);
+
+        String accessToken = jwtService.generateAccessToken(user);
+        String refreshToken = jwtService.generateRefreshToken(user);
+
+        String primaryRole = userMapper.toDTO(user).getRole();
+
+        log.info("2FA verified successfully for user {}", user.getEmail());
+
+        return AuthResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .tokenType("Bearer")
+                .userId(user.getId())
+                .email(user.getEmail())
+                .role(primaryRole)
+                .twoFactorRequired(false)
+                .message("2FA verification successful")
+                .build();
+    }
 
     @Override
     public AuthResponse refreshToken(String refreshToken) {
@@ -162,7 +193,6 @@ public class AuthServiceImpl implements IAuthService {
         }
 
         String newAccessToken = jwtService.generateAccessToken(user);
-
         String primaryRole = userMapper.toDTO(user).getRole();
 
         return AuthResponse.builder()

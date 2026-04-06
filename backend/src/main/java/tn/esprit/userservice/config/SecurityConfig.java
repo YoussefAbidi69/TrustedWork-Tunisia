@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -22,8 +23,6 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-// prePostEnabled = true  →  active @PreAuthorize / @PostAuthorize
-// securedEnabled  = true  →  active @Secured (optionnel mais cohérent)
 @EnableMethodSecurity(prePostEnabled = true, securedEnabled = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
@@ -34,29 +33,32 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .cors(Customizer.withDefaults())
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // ================= PUBLIC (pas de token requis) =================
+                        // Auth public endpoints
                         .requestMatchers("/auth/register").permitAll()
                         .requestMatchers("/auth/login").permitAll()
+                        .requestMatchers("/auth/verify-2fa").permitAll()
                         .requestMatchers("/auth/refresh").permitAll()
                         .requestMatchers("/auth/forgot-password").permitAll()
                         .requestMatchers("/auth/reset-password").permitAll()
 
-                        // Documentation Swagger
+                        // Google OAuth2
+                        .requestMatchers("/auth/google").permitAll()
+
+                        // 2FA setup endpoints
+                        .requestMatchers("/auth/setup-2fa/**").permitAll()
+                        .requestMatchers("/auth/confirm-2fa/**").permitAll()
+                        .requestMatchers("/auth/disable-2fa/**").permitAll()
+
+                        // Swagger / OpenAPI
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
 
-                        // Pre-flight CORS
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
-                        // ================= TOUT LE RESTE → authentifié =================
-                        // La granularité fin-grained est gérée par @PreAuthorize dans les controllers.
-                        // On supprime les règles hasRole() ici pour éviter la double vérification
-                        // et les conflits entre la couche HTTP et la couche méthode.
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -73,19 +75,21 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOrigins(List.of(
+        config.setAllowedOriginPatterns(List.of(
                 "http://localhost:4200",
                 "http://localhost:4201",
                 "http://localhost:3000"
         ));
 
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"));
+        config.setExposedHeaders(List.of("Authorization"));
         config.setAllowCredentials(true);
         config.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
+
         return source;
     }
 }

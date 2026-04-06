@@ -8,7 +8,9 @@ public interface ITwoFactorService {
 
     boolean verifyCode(String secret, String code);
 
-    void enable2FA(Integer cin);
+    String setupTwoFactor(Integer cin);
+
+    void confirmTwoFactor(Integer cin, String code);
 
     void disable2FA(Integer cin);
 }
